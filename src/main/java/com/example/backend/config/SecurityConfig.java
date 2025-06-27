@@ -50,11 +50,13 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public/**").permitAll()
+                        .requestMatchers("/register").permitAll()
                         .requestMatchers("/admin/**").hasRole("Doctor")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(rs -> rs
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(keycloakRoleConverter())))
+                        .jwt(jwt -> jwt
+                                .jwtAuthenticationConverter(keycloakRoleConverter())
+                                .jwkSetUri("http://127.0.0.1:8080/realms/PMA/protocol/openid-connect/certs") ))
                 .build();
     }
-}   // ← make sure this is the final closing brace
+}
