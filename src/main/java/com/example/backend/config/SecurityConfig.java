@@ -22,11 +22,15 @@ public class SecurityConfig {
 
     /** Extract Keycloak realm roles → ROLE_* */
     private Collection<GrantedAuthority> extractRealmRoles(Jwt jwt) {
-        // the cast is safe because Keycloak always sends a list here
-        @SuppressWarnings("unchecked")
-        var roles = (Collection<Object>)
-                ((java.util.Map<String, Object>) jwt.getClaim("realm_access"))
-                        .getOrDefault("roles", Collections.emptyList());
+        Object claim = jwt.getClaim("realm_access");
+
+        Collection<Object> roles = Collections.emptyList();
+        if (claim instanceof java.util.Map<?, ?> realmAccess) {
+            Object rawRoles = realmAccess.getOrDefault("roles", Collections.emptyList());
+            if (rawRoles instanceof Collection<?> rawList) {
+                roles = new java.util.ArrayList<>(rawList);
+            }
+        }
 
         return roles.stream()
                 .map(Object::toString)
