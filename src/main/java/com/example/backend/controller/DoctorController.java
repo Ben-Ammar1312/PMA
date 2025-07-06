@@ -1,6 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.model.FertilityRecord;
+import com.example.backend.model.FertilityRecordDetails;
 import com.example.backend.service.FertilityRecordService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +18,7 @@ public class DoctorController {
     }
 
     @GetMapping("/patient/{id}")
-    public FertilityRecord getPatientRecord(@PathVariable String id) {
-        return fertilityRecordService.getFertilityRecord(id);
+    public FertilityRecordDetails getPatientRecord(@PathVariable String id) {
+        return fertilityRecordService.getFullFertilityRecord(id);
     }
 }
