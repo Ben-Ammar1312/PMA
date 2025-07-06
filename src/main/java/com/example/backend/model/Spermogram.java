@@ -40,4 +40,5 @@ public class Spermogram {
     private Double normalMorphology;
     private Double vitality;
     private SpermCulture spermCulture;
+    private String fileId; // GridFS id
 }

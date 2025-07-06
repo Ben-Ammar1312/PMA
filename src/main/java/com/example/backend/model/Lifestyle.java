@@ -2,8 +2,13 @@ package com.example.backend.model;
 import lombok.*;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class Lifestyle {
-    private Boolean tobacco;   // true / false; or cigarettes‑per‑day if preferred
-    private Boolean alcohol;   // idem
-    private String drugs;      // free text or enum
-    private Double bmi;        // Body‑mass index
+    private Boolean tobacco;
+    private Integer cigarettesPerDay;
+    private Boolean alcohol;
+    private Integer alcoholUnitsPerWeek;
+    private String alcoholType;
+    private String drugClass;
+    private String drugFrequency;
+    private String physicalActivity;
+    private Double bmi;
 }
