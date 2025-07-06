@@ -14,6 +14,7 @@ public class FertilityRecordService {
     final HysterosalpingographyRepository hysterosalpingographyRepository;
     final PelvicUltrasoundRepository pelvicUltrasoundRepository;
     final SpermogramRepository spermogramRepository;
+    final MedicalAttachmentRepository medicalAttachmentRepository;
 
     public void addFertilityRecord(FertilityRecord fertilityRecord) {
         fertilityRecordRepository.save(fertilityRecord);
@@ -38,6 +39,7 @@ public class FertilityRecordService {
                 .hysterosalpingographies(hysterosalpingographyRepository.findByRecordId(id))
                 .pelvicUltrasounds(pelvicUltrasoundRepository.findByRecordId(id))
                 .spermograms(spermogramRepository.findByRecordId(id))
+                .medicalAttachments(medicalAttachmentRepository.findByRecordId(id))
                 .build();
     }
 

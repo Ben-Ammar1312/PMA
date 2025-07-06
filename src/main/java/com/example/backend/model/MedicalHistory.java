@@ -5,5 +5,7 @@ import java.util.List;
 public class MedicalHistory {
     private List<String> medical;
     private List<String> surgical;
+    private List<String> gynecological;
+    private List<String> allergies;
     private List<String> family;
 }

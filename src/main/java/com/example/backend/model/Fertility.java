@@ -11,6 +11,8 @@ public class Fertility {
     /** Previous pregnancies for that partner */
     private List<Pregnancy> previousPregnancies;
 
-    /* Female‑specific sub‑object – optional for male partner */
+    /* Female-specific sub-object – optional for male partner */
     private MenstrualCycles menstrualCycles;
+
+    private Contraception contraception;
 }
