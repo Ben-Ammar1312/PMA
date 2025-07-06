@@ -14,4 +14,9 @@ public class FertilityRecordService {
         fertilityRecordRepository.save(fertilityRecord);
     }
 
+    public FertilityRecord getFertilityRecord(String id) {
+        return fertilityRecordRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Fertility record not found"));
+    }
+
 }
