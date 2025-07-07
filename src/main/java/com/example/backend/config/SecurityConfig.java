@@ -13,53 +13,70 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Configuration
-@EnableMethodSecurity          // enables @PreAuthorize, @PostAuthorize, …
+@EnableMethodSecurity        // enables @PreAuthorize / @PostAuthorize, etc.
 public class SecurityConfig {
 
-    /** Extract Keycloak realm roles → ROLE_* */
-    private Collection<GrantedAuthority> extractRealmRoles(Jwt jwt) {
-        Object claim = jwt.getClaim("realm_access");
+    /* ----------------------------------------------------------------
+     * 1.  Convert Keycloak realm roles → ROLE_* authorities
+     * ---------------------------------------------------------------- */
+    private static Collection<GrantedAuthority> realmRoleAuthorities(Jwt jwt) {
 
-        Collection<Object> roles = Collections.emptyList();
-        if (claim instanceof java.util.Map<?, ?> realmAccess) {
-            Object rawRoles = realmAccess.getOrDefault("roles", Collections.emptyList());
-            if (rawRoles instanceof Collection<?> rawList) {
-                roles = new java.util.ArrayList<>(rawList);
-            }
+        /*
+         * Keycloak puts realm roles in:
+         *   "realm_access": { "roles": [ "Doctor", "offline_access", ... ] }
+         */
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+        if (realmAccess == null || realmAccess.isEmpty()) {
+            return java.util.List.of();       // no roles → empty authority list
         }
 
+        @SuppressWarnings("unchecked")
+        Collection<String> roles = (Collection<String>) realmAccess.getOrDefault("roles", java.util.List.of());
+
         return roles.stream()
-                .map(Object::toString)
-                .map(r -> "ROLE_" + r)
-                .map(SimpleGrantedAuthority::new)
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
                 .collect(Collectors.toSet());
     }
 
-    /** Converter bean used by Spring-Security */
+    /* ----------------------------------------------------------------
+     * 2.  Spring-Security converter bean
+     * ---------------------------------------------------------------- */
     @Bean
-    JwtAuthenticationConverter keycloakRoleConverter() {
-        var converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(this::extractRealmRoles);
+    JwtAuthenticationConverter jwtAuthenticationConverter() {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(SecurityConfig::realmRoleAuthorities);
         return converter;
     }
 
-    /** Security rules */
+    /* ----------------------------------------------------------------
+     * 3.  Filter-chain
+     * ---------------------------------------------------------------- */
     @Bean
-    SecurityFilterChain api(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                            JwtAuthenticationConverter jwtConverter) throws Exception {
+
         return http
+                /* — stateless REST — */
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                /* — authorisation rules — */
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/doctor/**").hasRole("Doctor")
-                        .anyRequest().authenticated())
-                .oauth2ResourceServer(rs -> rs
+                        .requestMatchers("/doctor/**").hasRole("Doctor")   // == authority ROLE_Doctor
+                        .anyRequest().authenticated()
+                )
+
+                /* — JWT resource-server — */
+                .oauth2ResourceServer(oauth -> oauth
                         .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(keycloakRoleConverter())
-                                .jwkSetUri("http://127.0.0.1:8080/realms/PMA/protocol/openid-connect/certs") ))
+                                .jwtAuthenticationConverter(jwtConverter)
+                        )
+                )
+
                 .build();
     }
 }
