@@ -14,5 +14,5 @@ export MAVEN_USER_HOME="$PWD/.m2"
 ## Testing
 ```bash
 # Run unit + integration tests completely OFFLINE
-./mvnw -q verify -Dmaven.repo.local=.m2 -o
+./mvnw -q verify 
 ```
