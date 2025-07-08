@@ -66,6 +66,7 @@ public class SecurityConfig {
 
                 /* — authorisation rules — */
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/register").permitAll()
                         .requestMatchers("/doctor/**").hasRole("Doctor")   // == authority ROLE_Doctor
                         .anyRequest().authenticated()
                 )
