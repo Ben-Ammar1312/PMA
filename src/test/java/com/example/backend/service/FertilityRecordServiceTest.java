@@ -1,5 +1,6 @@
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
+import com.example.backend.service.FertilityRecordService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

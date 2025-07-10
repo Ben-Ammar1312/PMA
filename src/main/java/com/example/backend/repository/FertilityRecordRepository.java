@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface FertilityRecordRepository
         extends MongoRepository<FertilityRecord, String> {
@@ -16,4 +17,7 @@ public interface FertilityRecordRepository
 
     // Example: records where result is 'PREGNANCY'
     List<FertilityRecord> findByTreatmentsCycleOutcomeEquals(String resultCycle);
+
+    //** Query by the embedded business key: couple.code */
+    Optional<FertilityRecord> findByCoupleCode(String code);
 }

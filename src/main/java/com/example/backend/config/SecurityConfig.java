@@ -46,7 +46,7 @@ public class SecurityConfig {
      * 2.  Spring-Security converter bean
      * ---------------------------------------------------------------- */
     @Bean
-    JwtAuthenticationConverter jwtAuthenticationConverter() {
+    public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         converter.setJwtGrantedAuthoritiesConverter(SecurityConfig::realmRoleAuthorities);
         return converter;

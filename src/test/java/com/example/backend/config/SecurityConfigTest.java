@@ -1,4 +1,4 @@
-import com.example.backend.config.SecurityConfig;
+package com.example.backend.config;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;

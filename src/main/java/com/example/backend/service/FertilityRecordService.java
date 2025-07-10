@@ -2,6 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
+import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,17 +30,25 @@ public class FertilityRecordService {
      * Retrieve a fertility record along with all associated time-series
      * assessments.
      */
-    public FertilityRecordDetails getFullFertilityRecord(String id) {
-        FertilityRecord record = getFertilityRecord(id);
+    public FertilityRecordDetails getFullFertilityRecord(String coupleCode) {
 
+        // ① Fetch the master document via the new key
+        FertilityRecord record = fertilityRecordRepository
+                .findByCoupleCode(coupleCode)
+                .orElseThrow(() -> new NotFoundException(
+                        "Fertility record with couple.code=" + coupleCode + " not found"));
+
+        var recordId = record.getId();   // keep using the _id to join child docs
+
+        // ② Build the DTO
         return FertilityRecordDetails.builder()
                 .record(record)
-                .microbiologyResults(microbiologyResultRepository.findByRecordId(id))
-                .hormonePanels(hormonePanelRepository.findByRecordId(id))
-                .hysterosalpingographies(hysterosalpingographyRepository.findByRecordId(id))
-                .pelvicUltrasounds(pelvicUltrasoundRepository.findByRecordId(id))
-                .spermograms(spermogramRepository.findByRecordId(id))
-                .medicalAttachments(medicalAttachmentRepository.findByRecordId(id))
+                .microbiologyResults     (microbiologyResultRepository     .findByRecordId(recordId))
+                .hormonePanels           (hormonePanelRepository           .findByRecordId(recordId))
+                .hysterosalpingographies (hysterosalpingographyRepository .findByRecordId(recordId))
+                .pelvicUltrasounds       (pelvicUltrasoundRepository       .findByRecordId(recordId))
+                .spermograms             (spermogramRepository             .findByRecordId(recordId))
+                .medicalAttachments      (medicalAttachmentRepository      .findByRecordId(recordId))
                 .build();
     }
 
