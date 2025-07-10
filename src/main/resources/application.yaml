@@ -1,6 +1,0 @@
-keycloak:
-  server-url: http://localhost:8080
-  realm: master
-  client-id: admin-cli
-  username: admin
-  password: admin
