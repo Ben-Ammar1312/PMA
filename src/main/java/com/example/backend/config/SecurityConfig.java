@@ -2,6 +2,7 @@ package com.example.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -60,12 +61,16 @@ public class SecurityConfig {
                                             JwtAuthenticationConverter jwtConverter) throws Exception {
 
         return http
+                .cors(cors -> {
+                    // no need to configure anything here because we provide a CorsConfigurationSource bean
+                })
                 /* — stateless REST — */
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 /* — authorisation rules — */
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/register").permitAll()
                         .requestMatchers("/register").permitAll()
                         .requestMatchers("/doctor/**").hasRole("Doctor")   // == authority ROLE_Doctor
                         .anyRequest().authenticated()
