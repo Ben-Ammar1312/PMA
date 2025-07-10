@@ -37,8 +37,21 @@ public class Spermogram {
     private Double ejaculateVolume;
     private Double concentration;
     private Double progressiveMotility;
+    private Double nonProgressiveMotility;
     private Double normalMorphology;
     private Double vitality;
+    private Integer abstinenceDays;
+    private Double immotile;
+    private Double leucocytes;
+    private Double ph;
+    private Double totalCount;
+    private Double roundCells;
+    private String viscosity;
+    private String remarks;
+    private String fileCytogramId;
+    private Double multipleAnomalyIndex;
+    private java.util.Map<String, Object> casa;
+    private java.util.Map<String, Object> morphologyBreakdown;
     private SpermCulture spermCulture;
     private String fileId; // GridFS id
 }

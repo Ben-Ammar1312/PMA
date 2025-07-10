@@ -13,6 +13,8 @@ public class FertilityRecord {
     private String id;
 
     private Couple couple;
+    private Partner femalePartner;
+    private Partner malePartner;
     private List<Treatment> treatments;
 
     private Boolean priorPma;

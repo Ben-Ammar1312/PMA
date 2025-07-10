@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+import com.example.backend.model.MicrobiologyResult;
+
 /**
  * Aggregated view of a fertility record including all associated
  * time-series analyses.
@@ -18,7 +20,7 @@ import java.util.List;
 public class FertilityRecordDetails {
 
     private FertilityRecord record;
-    private List<BacteriologyAnalysis> bacteriologyAnalyses;
+    private List<MicrobiologyResult> microbiologyResults;
     private List<HormonePanel> hormonePanels;
     private List<Hysterosalpingography> hysterosalpingographies;
     private List<PelvicUltrasound> pelvicUltrasounds;

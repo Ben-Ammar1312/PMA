@@ -16,7 +16,7 @@ class FertilityRecordServiceTest {
     @Mock
     FertilityRecordRepository fertilityRecordRepository;
     @Mock
-    BacteriologyAnalysisRepository bacteriologyAnalysisRepository;
+    MicrobiologyResultRepository microbiologyResultRepository;
     @Mock
     HormonePanelRepository hormonePanelRepository;
     @Mock
@@ -67,14 +67,14 @@ class FertilityRecordServiceTest {
         FertilityRecord record = new FertilityRecord();
         when(fertilityRecordRepository.findById("id"))
                 .thenReturn(Optional.of(record));
-        BacteriologyAnalysis b = BacteriologyAnalysis.builder().build();
+        MicrobiologyResult b = MicrobiologyResult.builder().build();
         HormonePanel h = HormonePanel.builder().build();
         Hysterosalpingography hy = Hysterosalpingography.builder().build();
         PelvicUltrasound p = PelvicUltrasound.builder().build();
         Spermogram s = Spermogram.builder().build();
         MedicalAttachment m = MedicalAttachment.builder().build();
 
-        when(bacteriologyAnalysisRepository.findByRecordId("id"))
+        when(microbiologyResultRepository.findByRecordId("id"))
                 .thenReturn(List.of(b));
         when(hormonePanelRepository.findByRecordId("id"))
                 .thenReturn(List.of(h));
@@ -90,7 +90,7 @@ class FertilityRecordServiceTest {
         FertilityRecordDetails details = service.getFullFertilityRecord("id");
 
         assertSame(record, details.getRecord());
-        assertEquals(List.of(b), details.getBacteriologyAnalyses());
+        assertEquals(List.of(b), details.getMicrobiologyResults());
         assertEquals(List.of(h), details.getHormonePanels());
         assertEquals(List.of(hy), details.getHysterosalpingographies());
         assertEquals(List.of(p), details.getPelvicUltrasounds());
