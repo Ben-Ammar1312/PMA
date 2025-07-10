@@ -12,19 +12,19 @@ public class KeycloakAdminConfig {
 
     @Bean
     public Keycloak keycloak(
-            @Value("${keycloak.server-url:http://localhost:8080}") String serverUrl,
-            @Value("${keycloak.realm:master}") String realm,
-            @Value("${keycloak.client-id:admin-cli}") String clientId,
-            @Value("${keycloak.username:admin}") String username,
-            @Value("${keycloak.password:admin}") String password
-    ) {
+            @Value("${keycloak.server-url}") String serverUrl,
+            @Value("${keycloak.admin-realm}") String adminRealm,
+            @Value("${keycloak.client-id}")   String clientId,
+            @Value("${keycloak.username}")    String username,
+            @Value("${keycloak.password}")    String password) {
+
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
-                .realm(realm)
-                .grantType(OAuth2Constants.PASSWORD)
+                .realm(adminRealm)      // login realm
                 .clientId(clientId)
                 .username(username)
                 .password(password)
+                .grantType(OAuth2Constants.PASSWORD)
                 .build();
     }
 }

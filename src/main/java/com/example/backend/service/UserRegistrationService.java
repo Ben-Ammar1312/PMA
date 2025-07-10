@@ -17,24 +17,30 @@ public class UserRegistrationService {
 
     private final Keycloak keycloak;
 
-    @Value("${keycloak.realm:master}")
-    private String realm;
+    @Value("${keycloak.target-realm:PMA}")
+    private String targetRealm;      // where users go
 
     public void register(RegisterRequest request) {
+
         UserRepresentation user = new UserRepresentation();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setEnabled(true);
 
-        CredentialRepresentation credential = new CredentialRepresentation();
-        credential.setType(CredentialRepresentation.PASSWORD);
-        credential.setValue(request.getPassword());
-        credential.setTemporary(false);
-        user.setCredentials(List.of(credential));
+        CredentialRepresentation cred = new CredentialRepresentation();
+        cred.setType(CredentialRepresentation.PASSWORD);
+        cred.setValue(request.getPassword());
+        cred.setTemporary(false);
+        user.setCredentials(List.of(cred));
 
-        Response response = keycloak.realm(realm).users().create(user);
-        if (response.getStatus() >= 400) {
-            throw new RuntimeException("Failed to create user: " + response.getStatus());
+        Response resp = keycloak.realm(targetRealm)   // ← **PMA**
+                .users()
+                .create(user);
+
+        if (resp.getStatus() >= 400) {
+            throw new RuntimeException(
+                    "Failed to create user in realm '" + targetRealm +
+                            "': HTTP " + resp.getStatus());
         }
     }
 }
