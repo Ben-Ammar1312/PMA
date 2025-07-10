@@ -1,6 +1,5 @@
 package com.example.backend.model;
 
-import com.example.backend.model.enums.BacteriologyCategory;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,30 +11,26 @@ import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
 import java.time.LocalDate;
 
-/**
- * Individual bacteriology analysis stored as a separate document to avoid
- * unbounded array growth on the main fertility record.
- */
-@Document("bacteriology_analyses")
+@Document("hemostasis_panels")
 @TimeSeries(timeField = "date", metaField = "recordId")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BacteriologyAnalysis {
-
+public class HemostasisPanel {
     @Id
     private String id;
 
-    /** Reference to the owning fertility record. */
     @Indexed
     private String recordId;
 
-    /** Date of the test. Indexed for quick range queries. */
     @Indexed
     private LocalDate date;
 
-    private BacteriologyCategory category;
-    private String result;
-    private String culture;
+    private java.math.BigDecimal antithrombinIII;
+    private java.math.BigDecimal apcResistanceRatio;
+    private java.math.BigDecimal dahlbackFactor;
+    private java.math.BigDecimal proteinC;
+    private java.math.BigDecimal proteinS;
+    private String fileId;
 }

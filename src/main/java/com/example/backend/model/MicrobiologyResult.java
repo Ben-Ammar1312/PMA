@@ -10,38 +10,35 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
 import java.time.LocalDate;
+import java.util.Map;
 
 /**
- * Hormone panel stored separately to keep fertility records compact.
+ * Microbiology result stored separately to avoid unbounded record growth.
  */
-@Document("hormone_panels")
+@Document("microbiology_results")
 @TimeSeries(timeField = "date", metaField = "recordId")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class HormonePanel {
+public class MicrobiologyResult {
 
     @Id
     private String id;
 
+    /** Reference to the owning fertility record. */
     @Indexed
     private String recordId;
 
-    /** Date of the blood test. */
+    /** Date of the test. Indexed for quick range queries. */
     @Indexed
     private LocalDate date;
 
-    private Double fsh;
-    private Double lh;
-    private Double estradiol;
-    private Double amh;
-    private Double ft3;
-    private Double ft4;
-    private Double insulin;
-    private Integer progesterone;
-    private Double prolactin;
-    private Double testosterone;
-    private Double tsh;
+    private String sampleSite;
+    private String testType;
+    private String result;
+    private String organism;
     private String fileId; // GridFS id
+
+    private Map<String, Object> details;
 }

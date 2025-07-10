@@ -1,6 +1,5 @@
 package com.example.backend.model;
 
-import com.example.backend.model.enums.AttachmentType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -8,24 +7,29 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
-import java.time.Instant;
+import java.time.LocalDate;
+import java.util.Map;
 
-@Document("medical_attachments")
+@Document("biochemistry_panels")
+@TimeSeries(timeField = "date", metaField = "recordId")
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class MedicalAttachment {
-
+public class BiochemistryPanel {
     @Id
     private String id;
 
     @Indexed
     private String recordId;
 
-    private Instant uploadedAt;
-    private AttachmentType type;
-    private String file;
-    private String comment;
+    @Indexed
+    private LocalDate date;
+
+    private String fileId;
+    private String lab;
+
+    private Map<String, Double> parameters;
 }

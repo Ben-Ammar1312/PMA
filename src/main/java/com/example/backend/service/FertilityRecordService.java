@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FertilityRecordService {
     final FertilityRecordRepository fertilityRecordRepository;
-    final BacteriologyAnalysisRepository bacteriologyAnalysisRepository;
+    final MicrobiologyResultRepository microbiologyResultRepository;
     final HormonePanelRepository hormonePanelRepository;
     final HysterosalpingographyRepository hysterosalpingographyRepository;
     final PelvicUltrasoundRepository pelvicUltrasoundRepository;
@@ -34,7 +34,7 @@ public class FertilityRecordService {
 
         return FertilityRecordDetails.builder()
                 .record(record)
-                .bacteriologyAnalyses(bacteriologyAnalysisRepository.findByRecordId(id))
+                .microbiologyResults(microbiologyResultRepository.findByRecordId(id))
                 .hormonePanels(hormonePanelRepository.findByRecordId(id))
                 .hysterosalpingographies(hysterosalpingographyRepository.findByRecordId(id))
                 .pelvicUltrasounds(pelvicUltrasoundRepository.findByRecordId(id))
