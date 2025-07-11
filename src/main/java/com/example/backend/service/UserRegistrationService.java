@@ -17,6 +17,8 @@ public class UserRegistrationService {
 
     private final Keycloak keycloak;
 
+
+    
     @Value("${keycloak.target-realm:PMA}")
     private String targetRealm;      // where users go
 
