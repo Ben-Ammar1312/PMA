@@ -69,6 +69,7 @@ public class SecurityConfig {
     SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
         http
                 .securityMatcher("/register") // Only match public paths
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz.anyRequest().permitAll());
 
