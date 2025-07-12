@@ -11,40 +11,19 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 @Configuration
-@EnableMethodSecurity        // enables @PreAuthorize / @PostAuthorize, etc.
+@EnableMethodSecurity
 public class SecurityConfig {
 
-    /* ----------------------------------------------------------------
-     * 1.  Convert Keycloak realm roles → ROLE_* authorities
-     * ---------------------------------------------------------------- */
-    private static Collection<GrantedAuthority> realmRoleAuthorities(Jwt jwt) {
-
-        /*
-         * Keycloak puts realm roles in:
-         *   "realm_access": { "roles": [ "Doctor", "offline_access", ... ] }
-         */
-        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-        if (realmAccess == null || realmAccess.isEmpty()) {
-            return java.util.List.of();       // no roles → empty authority list
-        }
-
-        @SuppressWarnings("unchecked")
-        Collection<String> roles = (Collection<String>) realmAccess.getOrDefault("roles", java.util.List.of());
-
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .collect(Collectors.toSet());
-    }
-
-    /* ----------------------------------------------------------------
-     * 2.  Spring-Security converter bean
-     * ---------------------------------------------------------------- */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
@@ -52,32 +31,61 @@ public class SecurityConfig {
         return converter;
     }
 
-    /* ----------------------------------------------------------------
-     * 3.  Filter-chain
-     * ---------------------------------------------------------------- */
-    @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                            JwtAuthenticationConverter jwtConverter) throws Exception {
+    private static Collection<GrantedAuthority> realmRoleAuthorities(Jwt jwt) {
+        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
+        if (realmAccess == null || realmAccess.isEmpty()) {
+            return List.of();
+        }
+        @SuppressWarnings("unchecked")
+        Collection<String> roles = (Collection<String>) realmAccess.getOrDefault("roles", List.of());
 
-        return http
-                /* — stateless REST — */
+        return roles.stream()
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .collect(Collectors.toSet());
+    }
+
+    // ✅ This only matches protected routes (i.e. all EXCEPT /register)
+    @Bean
+    SecurityFilterChain apiFilterChain(HttpSecurity http,
+                                       JwtAuthenticationConverter jwtConverter) throws Exception {
+        http
+                .securityMatcher("/doctor/**", "/protected/**", "/whatever/**") // adjust to your real protected paths
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                /* — authorisation rules — */
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/register").permitAll()
-                        .requestMatchers("/doctor/**").hasRole("Doctor")   // == authority ROLE_Doctor
+                        .requestMatchers("/doctor/**").hasRole("Doctor")
                         .anyRequest().authenticated()
                 )
-
-                /* — JWT resource-server — */
                 .oauth2ResourceServer(oauth -> oauth
-                        .jwt(jwt -> jwt
-                                .jwtAuthenticationConverter(jwtConverter)
-                        )
-                )
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter))
+                );
 
-                .build();
+        return http.build();
+    }
+
+    // ✅ This is now safe to use
+    @Bean
+    SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
+        http
+                .securityMatcher("/register") // Only match public paths
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(authz -> authz.anyRequest().permitAll());
+
+        return http.build();
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }
