@@ -14,7 +14,7 @@
   <style>
     /* make sure the whole viewport is light-grey */
     html, body {
-      background-color: #DCDDDF;
+      background-color: #EEEEEE;
       font-family: 'Geist','Inter',sans-serif;
     }
   </style>
@@ -37,7 +37,7 @@
 
 
   <!-- logo, pulled up over the card edge -->
-  <div class="flex justify-center -mt-6 mb-2">
+  <div class="flex justify-center -mt-2 mb-4">
     <img src="${url.resourcesPath}/img/logoSmallNoBg.png"
          alt="Company logo"
          width="220" height="100"/>
@@ -120,10 +120,10 @@
   </div>
 
   <!-- Submit button -->
-  <div class="flex justify-center mt-4">
+  <div class="flex justify-center">
     <button type="submit"
             class="
-                  w-40
+                  mt-6 w-40
                   bg-[#6985C0] hover:bg-[#637498]
                   text-white font-semibold
                   rounded-lg py-2

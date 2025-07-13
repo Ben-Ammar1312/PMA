@@ -17,8 +17,8 @@ public class FertilityRecordService {
     final SpermogramRepository spermogramRepository;
     final MedicalAttachmentRepository medicalAttachmentRepository;
 
-    public void addFertilityRecord(FertilityRecord fertilityRecord) {
-        fertilityRecordRepository.save(fertilityRecord);
+    public FertilityRecord addFertilityRecord(FertilityRecord fertilityRecord) {
+        return fertilityRecordRepository.save(fertilityRecord);
     }
 
     public FertilityRecord getFertilityRecord(String id) {
