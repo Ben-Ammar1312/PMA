@@ -61,6 +61,7 @@ docker_build:
   dependencies:
     - compile
   script:
+    - ls -l target/
     - docker build -t 144.91.76.149:5000/monapp-backend:$CI_COMMIT_SHA .
   tags:
     - docker
