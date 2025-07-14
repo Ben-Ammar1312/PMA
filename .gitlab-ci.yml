@@ -32,6 +32,8 @@ sonarqube-check:
   script:
     - mvn verify sonar:sonar -Dsonar.projectKey=pma-dev-backend -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
   allow_failure: true
+  tags:
+    - docker
   only:
     - main
     - dev
