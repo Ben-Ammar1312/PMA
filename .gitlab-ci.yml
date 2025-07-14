@@ -74,6 +74,8 @@ push:
   image: docker:latest
   services:
     - docker:dind
+  dependencies:
+    - docker_build
   script:
     - docker push 144.91.76.149:5000/monapp-backend:$CI_COMMIT_SHA
   tags:
