@@ -5,7 +5,7 @@ FROM openjdk:21-jdk-slim-buster
 WORKDIR /app
 
 # Copie le JAR construit dans le conteneur
-COPY target/*.jar app.jar
+COPY app.jar app.jar
 
 # Expose le port sur lequel tourne l'application (par défaut 8080)
 EXPOSE 8080
