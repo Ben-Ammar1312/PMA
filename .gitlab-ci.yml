@@ -57,7 +57,6 @@ push:
   services:
     - docker:dind
   script:
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin 144.91.76.149:5000
     - docker push 144.91.76.149:5000/monapp-backend:$CI_COMMIT_SHA
   tags:
     - docker
