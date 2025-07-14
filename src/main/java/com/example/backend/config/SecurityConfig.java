@@ -14,11 +14,15 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableMethodSecurity
@@ -49,8 +53,9 @@ public class SecurityConfig {
     SecurityFilterChain apiFilterChain(HttpSecurity http,
                                        JwtAuthenticationConverter jwtConverter) throws Exception {
         http
+
                 .securityMatcher("/doctor/**", "/protected/**", "/whatever/**") // adjust to your real protected paths
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
@@ -74,6 +79,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz.anyRequest().permitAll());
 
         return http.build();
+    }
+
+
+    @Configuration
+    public class WebConfig implements WebMvcConfigurer {
+        @Override
+        public void addCorsMappings(CorsRegistry registry) {
+            registry.addMapping("/**")                             // toutes les routes
+                    .allowedOrigins("http://localhost:3000")       // ton front Next.js
+                    .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
+                    .allowedHeaders("*")
+                    .allowCredentials(true);
+        }
     }
 
     @Bean

@@ -3,9 +3,9 @@ import lombok.*;
 import java.util.List;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class MedicalHistory {
-    private List<String> medical;
-    private List<String> surgical;
-    private List<String> gynecological;
-    private List<String> allergies;
-    private List<String> family;
+    private String medical;
+    private String surgical;
+    private String gynecological;
+    private String allergies;
+    private String family;
 }
