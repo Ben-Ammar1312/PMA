@@ -6,10 +6,10 @@ import java.util.List;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class MenstrualCycles {
     private Integer ageFirstPeriod;
-    private Boolean regular;
+    private String regular;
     private Integer cycleLength;
     private Integer periodLength;
-    private Boolean dysmenorrhea;
-    private List<String> symptoms;
+    private String dysmenorrhea;
+    private String symptoms;
     private LocalDate lastPeriodDate;
 }

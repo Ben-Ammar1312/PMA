@@ -19,10 +19,10 @@ public class FertilityRecord {
     private Partner malePartner;
     private List<Treatment> treatments;
 
-    private Boolean priorPma;
+    private String priorPma;
     private List<String> priorTechniques;
-    private Integer currentChildren;
-    private Integer childrenFromOtherUnion;
+    private String currentChildren;
+    private String childrenFromOtherUnion;
     private Instant created;
     private Instant updated;
     private Integer version;
