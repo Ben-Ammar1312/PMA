@@ -2,6 +2,7 @@ stages:
   - test
   - sonarqube
   - build
+  - docker
   - push
 
 variables:
