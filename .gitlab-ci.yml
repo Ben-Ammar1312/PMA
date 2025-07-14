@@ -65,7 +65,7 @@ docker_build:
     - compile
   script:
     - ls -alh docker/
-    - docker build -t 144.91.76.149:5000/monapp-backend:$CI_COMMIT_SHA docker/
+    - docker build -t 144.91.76.149:5000/pma-prj:$CI_COMMIT_SHA docker/
   tags:
     - docker
   only:
@@ -81,7 +81,7 @@ push:
   dependencies:
     - docker_build
   script:
-    - docker push 144.91.76.149:5000/monapp-backend:$CI_COMMIT_SHA
+    - docker push 144.91.76.149:5000/pma-prj:$CI_COMMIT_SHA
   tags:
     - docker
   only:
