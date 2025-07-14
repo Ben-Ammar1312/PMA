@@ -38,14 +38,29 @@ sonarqube-check:
     - main
     - dev
     - merge_requests
-
-build:
+compile:
   stage: build
   image: maven:3.9-amazoncorretto-21
-  services:
-    - docker:dind
   script:
     - mvn clean package -DskipTests
+  artifacts:
+    paths:
+      - target/*.jar
+  tags:
+    - docker
+  only:
+    - main
+    - dev
+    - merge_requests
+
+docker_build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  dependencies:
+    - compile
+  script:
     - docker build -t 144.91.76.149:5000/monapp-backend:$CI_COMMIT_SHA .
   tags:
     - docker
