@@ -62,8 +62,7 @@ docker_build:
     - compile
   script:
     - echo "Contenu de target :"
-    - ls -alh target/
-    - cp target/*.jar app.jar  # si besoin
+    - ls -l app.jar
     - docker build -t 144.91.76.149:5000/monapp-backend:$CI_COMMIT_SHA .
   tags:
     - docker
