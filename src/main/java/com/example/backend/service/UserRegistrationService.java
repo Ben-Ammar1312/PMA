@@ -17,23 +17,28 @@ public class UserRegistrationService {
 
     private final Keycloak keycloak;
 
+
+
     @Value("${keycloak.target-realm:PMA}")
     private String targetRealm;      // where users go
 
     public void register(RegisterRequest request) {
 
         UserRepresentation user = new UserRepresentation();
-        user.setUsername(request.getUsername());
+        user.setUsername(request.getEmail()); // use email as username
         user.setEmail(request.getEmail());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
         user.setEnabled(true);
 
         CredentialRepresentation cred = new CredentialRepresentation();
         cred.setType(CredentialRepresentation.PASSWORD);
         cred.setValue(request.getPassword());
         cred.setTemporary(false);
+
         user.setCredentials(List.of(cred));
 
-        Response resp = keycloak.realm(targetRealm)   // ← **PMA**
+        Response resp = keycloak.realm(targetRealm)
                 .users()
                 .create(user);
 
@@ -43,4 +48,5 @@ public class UserRegistrationService {
                             "': HTTP " + resp.getStatus());
         }
     }
+
 }
