@@ -41,7 +41,7 @@ sonarqube-check:
 
 build:
   stage: build
-  image: docker:latest
+  image: maven:3.9-amazoncorretto-21
   services:
     - docker:dind
   script:
