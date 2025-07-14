@@ -43,10 +43,11 @@ compile:
   image: maven:3.9-amazoncorretto-21
   script:
     - mvn clean package -DskipTests
-    - cp target/*.jar app.jar
+    - mkdir -p docker
+    - cp target/*.jar docker/app.jar
   artifacts:
     paths:
-      - app.jar
+      - docker/app.jar
   tags:
     - docker
   only:
@@ -55,16 +56,15 @@ compile:
     - merge_requests
 
 docker_build:
-  stage: build
+  stage: docker
   image: docker:latest
   services:
     - docker:dind
   dependencies:
     - compile
   script:
-    - echo "Fichiers disponibles dans le dossier courant :"
-    - ls -alh
-    - docker build -t 144.91.76.149:5000/monapp-backend:$CI_COMMIT_SHA .
+    - ls -alh docker/
+    - docker build -t 144.91.76.149:5000/monapp-backend:$CI_COMMIT_SHA docker/
   tags:
     - docker
   only:
