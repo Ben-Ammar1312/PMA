@@ -35,7 +35,6 @@ services:
   # ---------------------------------
   keycloak:
     image: quay.io/keycloak/keycloak:26.2.5
-    container_name: keycloak
     depends_on:
       - db
     ports:
@@ -47,7 +46,9 @@ services:
       KC_DB_URL: jdbc:postgresql://db:5432/keycloak
       KC_DB_USERNAME: kc
       KC_DB_PASSWORD: kcpass
-    command: start-dev                 # production mode (not start-dev)
+    command: start-dev
+    volumes:
+    - ./themes/my-nest-login:/opt/keycloak/themes/my-nest-login
 
 volumes:
   mongo_data:   # persistent volume for MongoDB

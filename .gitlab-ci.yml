@@ -1,0 +1,12 @@
+test:
+  stage: test
+  image: maven:3.9-amazoncorretto-21
+  variables:
+    SPRING_PROFILES_ACTIVE: cicd
+  script:
+    - mvn clean test -Dspring.profiles.active=cicd
+  tags:
+    - docker
+  only:
+    - dev
+    - merge_requests

@@ -9,7 +9,7 @@ public class Fertility {
     private String intercourseFrequency;
 
     /** Previous pregnancies for that partner */
-    private List<Pregnancy> previousPregnancies;
+    private String previousPregnancies;
 
     /* Female-specific sub-object – optional for male partner */
     private MenstrualCycles menstrualCycles;

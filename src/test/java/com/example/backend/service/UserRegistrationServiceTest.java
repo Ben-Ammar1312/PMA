@@ -13,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +42,15 @@ class UserRegistrationServiceTest {
     @Test
     void register_shouldSucceed_whenKeycloakReturns201() {
         // Arrange
-        RegisterRequest request = new RegisterRequest("testuser", "test@example.com", "pass123");
+
+        RegisterRequest request = RegisterRequest.builder()
+                .email("test@example.com")
+                .firstName("John")
+                .lastName("Doe")
+                .password("pass123")
+                .build();
+
+
 
         when(keycloak.realm("PMA")).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);
@@ -59,8 +66,14 @@ class UserRegistrationServiceTest {
 
     @Test
     void register_shouldThrowException_whenKeycloakReturnsError() {
-        // Arrange
-        RegisterRequest request = new RegisterRequest("failuser", "fail@example.com", "failpass");
+
+        RegisterRequest request = RegisterRequest.builder()
+                .email("fail@example.com")
+                .firstName("Jane")
+                .lastName("Smith")
+                .password("failpass")
+                .build();
+
 
         when(keycloak.realm("PMA")).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);
