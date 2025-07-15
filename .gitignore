@@ -37,7 +37,7 @@ src/main/resources/application.properties
 
 # vendored local-repo (gone now)
 /.m2/
-# ignore any extracted Maven dist
-/.mvn/apache-maven-*/
-# but keep the wrapper itself
-!/.mvn/wrapper/**
+
+mvnw*
+
+.mvn/
