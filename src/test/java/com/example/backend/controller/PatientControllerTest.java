@@ -1,11 +1,8 @@
 package com.example.backend.controller;
 
-import com.example.backend.model.Couple;
 import com.example.backend.model.FertilityRecord;
-import com.example.backend.model.Partner;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
-import com.example.backend.service.SequenceGeneratorService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -36,13 +33,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(PatientController.class)
 @AutoConfigureMockMvc
-@Import({ FileStorageService.class, SequenceGeneratorService.class })
+@Import({ FileStorageService.class })
 class PatientControllerTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper mapper;
 
-    @MockitoBean private SequenceGeneratorService sequenceGeneratorService;
     @MockitoBean private FertilityRecordService fertilityRecordService;
     @MockitoSpyBean private FileStorageService fileStorageService;
 
@@ -59,17 +55,12 @@ class PatientControllerTest {
 
     @Test
     void whenPostingRecordAndFiles_thenReturns201AndFilesOnDisk() throws Exception {
-        // 1) stub out the sequence generator
-        given(sequenceGeneratorService.getNextSequence("coupleCode"))
-                .willReturn(123L);
-
-        // 2) stub out your DB call so saved.getCouple().getCode() survives
+        // stub out DB call so controller can return saved entity
         given(fertilityRecordService.addFertilityRecord(any(FertilityRecord.class)))
                 .willAnswer(inv -> inv.getArgument(0));
 
         // 3) build your record JSON
         FertilityRecord rec = new FertilityRecord();
-        rec.setCouple(new Couple(null, new Partner(), new Partner()));
         String json = mapper.writeValueAsString(rec);
 
         MockMultipartFile recordPart = new MockMultipartFile(
@@ -105,12 +96,12 @@ class PatientControllerTest {
                 )
                 .andExpect(status().isCreated());
 
-        // 6) assert files landed under uploads/123/
-        Path p1 = Paths.get("uploads/123/foo.txt");
+        // 6) assert files landed under uploads/dummyUser/
+        Path p1 = Paths.get("uploads/dummyUser/foo.txt");
         assertTrue(Files.exists(p1), "foo.txt should exist");
         assertArrayEquals("hello".getBytes(), Files.readAllBytes(p1));
 
-        Path p2 = Paths.get("uploads/123/bar.txt");
+        Path p2 = Paths.get("uploads/dummyUser/bar.txt");
         assertTrue(Files.exists(p2), "bar.txt should exist");
         assertArrayEquals("world".getBytes(), Files.readAllBytes(p2));
     }

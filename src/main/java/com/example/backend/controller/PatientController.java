@@ -1,9 +1,8 @@
 package com.example.backend.controller;
-import com.example.backend.model.Couple;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
-import com.example.backend.service.SequenceGeneratorService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -23,8 +22,8 @@ public class PatientController {
 
     private final FertilityRecordService fertilityRecordService;
     private final FileStorageService fileStorageService;
-    private final SequenceGeneratorService seqGen;
 
+    @Operation(summary = "Submit or update the authenticated user's record")
     @PostMapping(
             value    = "/record",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
@@ -46,32 +45,20 @@ public class PatientController {
             @RequestPart(value = "autreDocumentFiles",       required = false) MultipartFile[] autreDocumentFiles
     ) throws IOException {
         // 1) persist your record
-        long next = seqGen.getNextSequence("coupleCode");
-        if (record.getCouple() == null) {
-            record.setCouple(
-                    Couple.builder()
-                            .malePartner(   record.getMalePartner()   )
-                            .femalePartner( record.getFemalePartner() )
-                            .code( String.valueOf(next) )
-                            .build()
-            );
-        }
-        else {
-            record.getCouple().setCode( String.valueOf(next) );
-        }
+        record.setId(jwt.getSubject());
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
-        String coupleCode = saved.getCouple().getCode();
+        String patientId = saved.getId();
 
         // 2) store each of the four single uploads if present
-        if (bilanHormonalFile        != null) fileStorageService.store(bilanHormonalFile,        coupleCode);
-        if (echographiePelvienneFile != null) fileStorageService.store(echographiePelvienneFile, coupleCode);
-        if (hsgFile                  != null) fileStorageService.store(hsgFile,                  coupleCode);
-        if (spermogrammeFile         != null) fileStorageService.store(spermogrammeFile,         coupleCode);
+        if (bilanHormonalFile        != null) fileStorageService.store(bilanHormonalFile,        patientId);
+        if (echographiePelvienneFile != null) fileStorageService.store(echographiePelvienneFile, patientId);
+        if (hsgFile                  != null) fileStorageService.store(hsgFile,                  patientId);
+        if (spermogrammeFile         != null) fileStorageService.store(spermogrammeFile,         patientId);
 
         // 3) store the rest
         if (autreDocumentFiles != null) {
             for (MultipartFile f : autreDocumentFiles) {
-                fileStorageService.store(f, coupleCode);
+                fileStorageService.store(f, patientId);
             }
         }
     }
