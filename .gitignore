@@ -35,4 +35,5 @@ build/
 src/main/resources/application.properties
 /.m2/*
 !/.m2/wrapper/**
-
+!/.m2/repo/
+!/.m2/repo/**
