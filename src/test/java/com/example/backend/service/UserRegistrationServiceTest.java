@@ -56,12 +56,15 @@ class UserRegistrationServiceTest {
         when(realmResource.users()).thenReturn(usersResource);
         when(usersResource.create(any())).thenReturn(response);
         when(response.getStatus()).thenReturn(201);
+        java.net.URI loc = java.net.URI.create("http://id/123");
+        when(response.getLocation()).thenReturn(loc);
 
         // Act
-        registrationService.register(request);
+        String id = registrationService.register(request);
 
         // Assert
         verify(usersResource, times(1)).create(any());
+        org.junit.jupiter.api.Assertions.assertEquals("123", id);
     }
 
     @Test

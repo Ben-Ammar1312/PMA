@@ -22,7 +22,7 @@ public class UserRegistrationService {
     @Value("${keycloak.target-realm:PMA}")
     private String targetRealm;      // where users go
 
-    public void register(RegisterRequest request) {
+    public String register(RegisterRequest request) {
 
         UserRepresentation user = new UserRepresentation();
         user.setUsername(request.getEmail()); // use email as username
@@ -47,6 +47,10 @@ public class UserRegistrationService {
                     "Failed to create user in realm '" + targetRealm +
                             "': HTTP " + resp.getStatus());
         }
+
+        // location header ends with the new user's id
+        String path = resp.getLocation().getPath();
+        return path.substring(path.lastIndexOf('/') + 1);
     }
 
 }

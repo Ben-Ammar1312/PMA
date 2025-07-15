@@ -4,9 +4,11 @@ import lombok.*;
 
 
 
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Couple {
-    private String code;
     private Partner malePartner;
     private Partner femalePartner;
 }

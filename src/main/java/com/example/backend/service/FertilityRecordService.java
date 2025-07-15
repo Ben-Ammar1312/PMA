@@ -30,26 +30,38 @@ public class FertilityRecordService {
      * Retrieve a fertility record along with all associated time-series
      * assessments.
      */
-    public FertilityRecordDetails getFullFertilityRecord(String coupleCode) {
+    public FertilityRecordDetails getFullFertilityRecord(String recordId) {
 
-        // ① Fetch the master document via the new key
+        // ① Fetch the master document by its id
         FertilityRecord record = fertilityRecordRepository
-                .findByCoupleCode(coupleCode)
+                .findById(recordId)
                 .orElseThrow(() -> new NotFoundException(
-                        "Fertility record with couple.code=" + coupleCode + " not found"));
-
-        var recordId = record.getId();   // keep using the _id to join child docs
+                        "Fertility record with id=" + recordId + " not found"));
+        var rid = record.getId();   // keep using the _id to join child docs
 
         // ② Build the DTO
         return FertilityRecordDetails.builder()
                 .record(record)
-                .microbiologyResults     (microbiologyResultRepository     .findByRecordId(recordId))
-                .hormonePanels           (hormonePanelRepository           .findByRecordId(recordId))
-                .hysterosalpingographies (hysterosalpingographyRepository .findByRecordId(recordId))
-                .pelvicUltrasounds       (pelvicUltrasoundRepository       .findByRecordId(recordId))
-                .spermograms             (spermogramRepository             .findByRecordId(recordId))
-                .medicalAttachments      (medicalAttachmentRepository      .findByRecordId(recordId))
+                .microbiologyResults     (microbiologyResultRepository     .findByRecordId(rid))
+                .hormonePanels           (hormonePanelRepository           .findByRecordId(rid))
+                .hysterosalpingographies (hysterosalpingographyRepository .findByRecordId(rid))
+                .pelvicUltrasounds       (pelvicUltrasoundRepository       .findByRecordId(rid))
+                .spermograms             (spermogramRepository             .findByRecordId(rid))
+                .medicalAttachments      (medicalAttachmentRepository      .findByRecordId(rid))
                 .build();
+    }
+
+    /** create an empty fertility record for a newly registered user */
+    public FertilityRecord createRecordForUser(String userId) {
+        FertilityRecord record = FertilityRecord.builder()
+                .id(userId)
+                .build();
+        return fertilityRecordRepository.save(record);
+    }
+
+    /** return all fertility records */
+    public java.util.List<FertilityRecord> getAllRecords() {
+        return fertilityRecordRepository.findAll();
     }
 
 }
