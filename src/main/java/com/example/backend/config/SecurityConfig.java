@@ -2,9 +2,10 @@ package com.example.backend.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -14,96 +15,90 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.springframework.security.config.Customizer.withDefaults;
-
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    /**
+     * Convert Keycloak's realm_access.roles → Spring Security ROLE_...
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(SecurityConfig::realmRoleAuthorities);
-        return converter;
+        JwtAuthenticationConverter conv = new JwtAuthenticationConverter();
+        conv.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Map<String, Object> realm = jwt.getClaim("realm_access");
+            if (realm == null) return List.<GrantedAuthority>of();
+            @SuppressWarnings("unchecked")
+            var roles = (List<String>) realm.getOrDefault("roles", List.of());
+            return roles.stream()
+                    .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
+                    .collect(Collectors.toSet());
+        });
+        return conv;
     }
 
-    private static Collection<GrantedAuthority> realmRoleAuthorities(Jwt jwt) {
-        Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-        if (realmAccess == null || realmAccess.isEmpty()) {
-            return List.of();
-        }
-        @SuppressWarnings("unchecked")
-        Collection<String> roles = (Collection<String>) realmAccess.getOrDefault("roles", List.of());
-
-        return roles.stream()
-                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                .collect(Collectors.toSet());
-    }
-
-    // ✅ This only matches protected routes (i.e. all EXCEPT /register)
+    /**
+     * One and only SecurityFilterChain:
+     * 1) Allow EVERY OPTIONS for CORS
+     * 2) Allow anonymous POST /register
+     * 3) /doctor/** requires ROLE_Doctor
+     * 4) all others require a valid JWT
+     */
     @Bean
-    SecurityFilterChain apiFilterChain(HttpSecurity http,
-                                       JwtAuthenticationConverter jwtConverter) throws Exception {
+    @Order(1)
+    public SecurityFilterChain apiSecurity(HttpSecurity http,
+                                           JwtAuthenticationConverter jwtConverter) throws Exception {
         http
-
-                .securityMatcher("/doctor/**", "/protected/**", "/whatever/**") // adjust to your real protected paths
-                .cors(withDefaults())
-                .csrf(AbstractHttpConfigurer::disable)
+                // stateless, no CSRF
+                .csrf(csrf -> csrf.disable())
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
+                // enable CORS with our bean below
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // authorization rules
                 .authorizeHttpRequests(auth -> auth
+                        // 1) CORS preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // 2) signup
+                        .requestMatchers(HttpMethod.POST, "/register").permitAll()
+
+                        // 3) doctor endpoints
                         .requestMatchers("/doctor/**").hasRole("Doctor")
+
+                        // 4) everything else needs authentication
                         .anyRequest().authenticated()
                 )
+
+                // JWT resource‐server support
                 .oauth2ResourceServer(oauth -> oauth
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtConverter))
+                        .jwt(j -> j.jwtAuthenticationConverter(jwtConverter))
                 );
 
         return http.build();
     }
 
-    // ✅ This is now safe to use
-    @Bean
-    SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
-        http
-                .securityMatcher("/register") // Only match public paths
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(authz -> authz.anyRequest().permitAll());
-
-        return http.build();
-    }
-
-
-    @Configuration
-    public class WebConfig implements WebMvcConfigurer {
-        @Override
-        public void addCorsMappings(CorsRegistry registry) {
-            registry.addMapping("/**")                             // toutes les routes
-                    .allowedOrigins("http://localhost:3000")       // ton front Next.js
-                    .allowedMethods("GET","POST","PUT","DELETE","OPTIONS")
-                    .allowedHeaders("*")
-                    .allowCredentials(true);
-        }
-    }
-
+    /**
+     * CORS configuration so that your Next.js front
+     * at http://localhost:3000 can talk to this API.
+     */
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
+        var cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(List.of("http://localhost:3000"));
+        cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
+        cfg.setAllowedHeaders(List.of("*"));
+        cfg.setAllowCredentials(true);
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", config);
+        var source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
         return source;
     }
 }
