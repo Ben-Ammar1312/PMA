@@ -1,0 +1,49 @@
+package com.example.backend.controller;
+
+import com.example.backend.model.FertilityRecord;
+import com.example.backend.model.FertilityRecordDetails;
+import com.example.backend.service.FertilityRecordService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
+
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(DoctorController.class)
+@AutoConfigureMockMvc
+class DoctorControllerTest {
+
+    @Autowired MockMvc mockMvc;
+
+    @MockitoBean
+    private FertilityRecordService fertilityRecordService;
+
+    @Test
+    void getPatients_returns200AndDelegatesToService() throws Exception {
+        given(fertilityRecordService.getAllRecords()).willReturn(List.of(new FertilityRecord()));
+
+        mockMvc.perform(get("/doctor/patients"))
+                .andExpect(status().isOk());
+
+        verify(fertilityRecordService).getAllRecords();
+    }
+
+    @Test
+    void getPatientRecord_returns200AndDelegatesToService() throws Exception {
+        given(fertilityRecordService.getFullFertilityRecord("42"))
+                .willReturn(FertilityRecordDetails.builder().build());
+
+        mockMvc.perform(get("/doctor/patient/{id}", "42"))
+                .andExpect(status().isOk());
+
+        verify(fertilityRecordService).getFullFertilityRecord("42");
+    }
+}

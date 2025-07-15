@@ -4,7 +4,7 @@ import com.example.backend.model.FertilityRecord;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -42,14 +42,16 @@ class PatientControllerTest {
     @MockitoBean private FertilityRecordService fertilityRecordService;
     @MockitoSpyBean private FileStorageService fileStorageService;
 
-    @BeforeEach
-    void cleanUploads() throws IOException {
-        Path uploads = Paths.get("uploads");
-        if (Files.exists(uploads)) {
-            Files.walk(uploads)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+    private final java.util.List<Path> createdFiles = new java.util.ArrayList<>();
+
+    @AfterEach
+    void removeCreatedFiles() throws IOException {
+        for (Path p : createdFiles) {
+            Files.deleteIfExists(p);
+        }
+        Path userDir = Paths.get("uploads/dummyUser");
+        if (Files.exists(userDir) && Files.list(userDir).findAny().isEmpty()) {
+            Files.delete(userDir);
         }
     }
 
@@ -98,10 +100,12 @@ class PatientControllerTest {
 
         // 6) assert files landed under uploads/dummyUser/
         Path p1 = Paths.get("uploads/dummyUser/foo.txt");
+        createdFiles.add(p1);
         assertTrue(Files.exists(p1), "foo.txt should exist");
         assertArrayEquals("hello".getBytes(), Files.readAllBytes(p1));
 
         Path p2 = Paths.get("uploads/dummyUser/bar.txt");
+        createdFiles.add(p2);
         assertTrue(Files.exists(p2), "bar.txt should exist");
         assertArrayEquals("world".getBytes(), Files.readAllBytes(p2));
     }
