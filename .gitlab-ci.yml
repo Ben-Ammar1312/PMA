@@ -66,6 +66,7 @@ docker_build:
   script:
     - ls -alh docker/
     - docker build -t 144.91.76.149:5000/pma-prj:$CI_COMMIT_SHA docker/
+    - docker tag 144.91.76.149:5000/pma-prj:$CI_COMMIT_SHA 144.91.76.149:5000/pma-prj:latest
   tags:
     - docker
   only:
@@ -82,6 +83,7 @@ push:
     - docker_build
   script:
     - docker push 144.91.76.149:5000/pma-prj:$CI_COMMIT_SHA
+    - docker push 144.91.76.149:5000/pma-prj:latest
   tags:
     - docker
   only:
