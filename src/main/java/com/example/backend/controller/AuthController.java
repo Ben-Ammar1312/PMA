@@ -2,12 +2,11 @@ package com.example.backend.controller;
 
 import com.example.backend.model.RegisterRequest;
 import com.example.backend.service.UserRegistrationService;
+import com.example.backend.service.FertilityRecordService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
@@ -16,10 +15,14 @@ import jakarta.validation.Valid;
 public class AuthController {
 
     private final UserRegistrationService registrationService;
+    private final FertilityRecordService fertilityRecordService;
 
+    @Operation(summary = "Register a new user")
     @PostMapping("/register")
+    @CrossOrigin(origins = "http://localhost:3000")
     @ResponseStatus(HttpStatus.CREATED)
     public void register(@Valid @RequestBody RegisterRequest request) {
-        registrationService.register(request);
+        String userId = registrationService.register(request);
+        fertilityRecordService.createRecordForUser(userId);
     }
 }

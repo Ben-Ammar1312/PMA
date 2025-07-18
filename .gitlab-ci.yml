@@ -1,13 +1,104 @@
+stages:
+  - test
+  - sonarqube
+  - build
+  - docker
+  - push
+
+variables:
+  SPRING_PROFILES_ACTIVE: cicd
+  FILE_UPLOAD_DIR: uploads
+  SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # cache Sonar
+  GIT_DEPTH: "0"                             # clone complet requis par Sonar
+  KEYCLOAK_CLIENT_SECRET: "$KEYCLOAK_CLIENT_SECRET"  # Doit être défini dans les variables CI/CD
+  KEYCLOAK_ADMIN_USER: "admin"
+  KEYCLOAK_ADMIN_PASSWORD: "admin"
+
 test:
   stage: test
   image: maven:3.9-amazoncorretto-21
+  services:
+    - name: mongo:latest
+      alias: mongodb
+    - name: postgres:latest
+      alias: db
+    - name: quay.io/keycloak/keycloak:latest
+      alias: keycloak
+      command: ["start-dev"]
   variables:
-    SPRING_PROFILES_ACTIVE: cicd
-    FILE_UPLOAD_DIR: uploads
+    # Surcharge des variables si nécessaire
+    KEYCLOAK_AUTH_SERVER_URL: "http://keycloak:8080"
   script:
-    - mvn clean test -Dspring.profiles.active=cicd
+    - mvn clean test -Dspring.profiles.active=$SPRING_PROFILES_ACTIVE
   tags:
     - docker
   only:
+    - main
     - dev
     - merge_requests
+
+sonarqube-check:
+  stage: sonarqube
+  image: maven:3.9-amazoncorretto-21
+  cache:
+    key: "${CI_JOB_NAME}"
+    paths:
+      - .sonar/cache
+  script:
+    - mvn verify sonar:sonar -Dsonar.projectKey=pma-dev-backend -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+  allow_failure: true
+  tags:
+    - docker
+  only:
+    - main
+    - dev
+    - merge_requests
+compile:
+  stage: build
+  image: maven:3.9-amazoncorretto-21
+  script:
+    - mvn clean package -DskipTests
+    - mkdir -p docker
+    - cp target/*.jar docker/app.jar
+  artifacts:
+    paths:
+      - docker/app.jar
+  tags:
+    - docker
+  only:
+    - main
+
+
+docker_build:
+  stage: docker
+  image: docker:latest
+  services:
+    - docker:dind
+  dependencies:
+    - compile
+  script:
+    - ls -alh docker/
+    - docker build -t 144.91.76.149:5000/pma-prj:$CI_COMMIT_SHA docker/
+    - docker tag 144.91.76.149:5000/pma-prj:$CI_COMMIT_SHA 144.91.76.149:5000/pma-prj:latest
+  tags:
+    - docker
+  only:
+    - main
+
+
+push:
+  stage: push
+  image: docker:latest
+  services:
+    - docker:dind
+  dependencies:
+    - docker_build
+  script:
+    - docker push 144.91.76.149:5000/pma-prj:$CI_COMMIT_SHA
+    - docker push 144.91.76.149:5000/pma-prj:latest
+  tags:
+    - docker
+  only:
+    - main
+    
+

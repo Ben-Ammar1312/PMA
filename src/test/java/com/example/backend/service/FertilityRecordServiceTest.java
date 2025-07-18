@@ -63,7 +63,7 @@ class FertilityRecordServiceTest {
     void getFullFertilityRecord_aggregatesData() {
         // master record (id is NULL in default constructor – we leave it that way)
         FertilityRecord record = new FertilityRecord();
-        when(fertilityRecordRepository.findByCoupleCode("couple-key"))
+        when(fertilityRecordRepository.findById("rid"))
                 .thenReturn(Optional.of(record));
 
         // children
@@ -82,7 +82,7 @@ class FertilityRecordServiceTest {
         when(spermogramRepository            .findByRecordId(nullable(String.class))).thenReturn(List.of(sper));
         when(medicalAttachmentRepository     .findByRecordId(nullable(String.class))).thenReturn(List.of(att));
 
-        FertilityRecordDetails details = service.getFullFertilityRecord("couple-key");
+        FertilityRecordDetails details = service.getFullFertilityRecord("rid");
 
         assertSame(record, details.getRecord());
         assertEquals(List.of(micro), details.getMicrobiologyResults());

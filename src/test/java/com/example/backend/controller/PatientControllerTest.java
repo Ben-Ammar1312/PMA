@@ -1,13 +1,10 @@
 package com.example.backend.controller;
 
-import com.example.backend.model.Couple;
 import com.example.backend.model.FertilityRecord;
-import com.example.backend.model.Partner;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
-import com.example.backend.service.SequenceGeneratorService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -36,40 +33,43 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(PatientController.class)
 @AutoConfigureMockMvc
-@Import({ FileStorageService.class, SequenceGeneratorService.class })
+@Import({ FileStorageService.class })
 class PatientControllerTest {
 
     @Autowired MockMvc mockMvc;
     @Autowired ObjectMapper mapper;
 
-    @MockitoBean private SequenceGeneratorService sequenceGeneratorService;
     @MockitoBean private FertilityRecordService fertilityRecordService;
     @MockitoSpyBean private FileStorageService fileStorageService;
 
-    @BeforeEach
-    void cleanUploads() throws IOException {
-        Path uploads = Paths.get("uploads");
-        if (Files.exists(uploads)) {
-            Files.walk(uploads)
-                    .sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
+    private final java.util.List<Path> createdFiles = new java.util.ArrayList<>();
+
+    @AfterEach
+    void removeCreatedFiles() throws IOException {
+        for (Path p : createdFiles) {
+            Files.deleteIfExists(p);
+        }
+        Path parentDir = Paths.get("uploads");
+        // delete dummyUser_date directory if empty
+        String today = java.time.LocalDate.now().toString();
+        Path userDir = parentDir.resolve("dummyUser_" + today);
+        if (Files.exists(userDir) && Files.list(userDir).findAny().isEmpty()) {
+            Files.delete(userDir);
         }
     }
 
+
     @Test
     void whenPostingRecordAndFiles_thenReturns201AndFilesOnDisk() throws Exception {
-        // 1) stub out the sequence generator
-        given(sequenceGeneratorService.getNextSequence("coupleCode"))
-                .willReturn(123L);
-
-        // 2) stub out your DB call so saved.getCouple().getCode() survives
+        // stub DB call
         given(fertilityRecordService.addFertilityRecord(any(FertilityRecord.class)))
-                .willAnswer(inv -> inv.getArgument(0));
+                .willAnswer(inv -> {
+                    FertilityRecord rec = inv.getArgument(0);
+                    rec.setId("dummyUser");
+                    return rec;
+                });
 
-        // 3) build your record JSON
         FertilityRecord rec = new FertilityRecord();
-        rec.setCouple(new Couple(null, new Partner(), new Partner()));
         String json = mapper.writeValueAsString(rec);
 
         MockMultipartFile recordPart = new MockMultipartFile(
@@ -79,7 +79,6 @@ class PatientControllerTest {
                 json.getBytes()
         );
 
-        // 4) two "other" files
         MockMultipartFile file1 = new MockMultipartFile(
                 "autreDocumentFiles",
                 "foo.txt",
@@ -93,25 +92,30 @@ class PatientControllerTest {
                 "world".getBytes()
         );
 
-        // 5) perform the multipart POST
         mockMvc.perform(multipart("/patient/record")
                         .file(recordPart)
                         .file(file1)
                         .file(file2)
-                        // multipart builder defaults to GET, so force POST
                         .with(req -> { req.setMethod("POST"); return req; })
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .with(jwt().jwt(t -> t.claim("sub", "dummyUser")))
                 )
                 .andExpect(status().isCreated());
 
-        // 6) assert files landed under uploads/123/
-        Path p1 = Paths.get("uploads/123/foo.txt");
+        // Construct expected directory path with today's date
+        String today = java.time.LocalDate.now().toString();
+        Path uploadDir = Paths.get("uploads/dummyUser_" + today);
+
+        // Check files inside that directory
+        Path p1 = uploadDir.resolve("foo_" + today + ".txt");
+        createdFiles.add(p1);
         assertTrue(Files.exists(p1), "foo.txt should exist");
         assertArrayEquals("hello".getBytes(), Files.readAllBytes(p1));
 
-        Path p2 = Paths.get("uploads/123/bar.txt");
+        Path p2 = uploadDir.resolve("bar_" + today + ".txt");
+        createdFiles.add(p2);
         assertTrue(Files.exists(p2), "bar.txt should exist");
         assertArrayEquals("world".getBytes(), Files.readAllBytes(p2));
     }
+
 }
