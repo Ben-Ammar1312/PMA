@@ -18,6 +18,4 @@ public interface FertilityRecordRepository
     // Example: records where result is 'PREGNANCY'
     List<FertilityRecord> findByTreatmentsCycleOutcomeEquals(String resultCycle);
 
-    //** Query by the embedded business key: couple.code */
-    Optional<FertilityRecord> findByCoupleCode(String code);
 }
