@@ -48,7 +48,7 @@ services:
       KC_DB_PASSWORD: kcpass
     command: start-dev
     volumes:
-    - ./themes/my-nest-login:/opt/keycloak/themes/my-nest-login
+    - ./themes/wishborn:/opt/keycloak/themes/my-nest-login
 
 volumes:
   mongo_data:   # persistent volume for MongoDB
