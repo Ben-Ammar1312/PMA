@@ -1,5 +1,5 @@
 # Utilise une image Java 21 officielle légère
-FROM openjdk:21-jdk-slim-buster
+FROM openjdk:21-jdk-bookworm
 
 # Définit le répertoire de travail dans le conteneur
 WORKDIR /app
