@@ -10,10 +10,24 @@ variables:
   FILE_UPLOAD_DIR: uploads
   SONAR_USER_HOME: "${CI_PROJECT_DIR}/.sonar"  # cache Sonar
   GIT_DEPTH: "0"                             # clone complet requis par Sonar
+  KEYCLOAK_CLIENT_SECRET: "$KEYCLOAK_CLIENT_SECRET"  # Doit être défini dans les variables CI/CD
+  KEYCLOAK_ADMIN_USER: "admin"
+  KEYCLOAK_ADMIN_PASSWORD: "admin"
 
 test:
   stage: test
   image: maven:3.9-amazoncorretto-21
+  services:
+    - name: mongo:latest
+      alias: mongodb
+    - name: postgres:latest
+      alias: db
+    - name: quay.io/keycloak/keycloak:latest
+      alias: keycloak
+      command: ["start-dev"]
+  variables:
+    # Surcharge des variables si nécessaire
+    KEYCLOAK_AUTH_SERVER_URL: "http://keycloak:8080"
   script:
     - mvn clean test -Dspring.profiles.active=$SPRING_PROFILES_ACTIVE
   tags:
@@ -53,8 +67,7 @@ compile:
     - docker
   only:
     - main
-    - dev
-    - merge_requests
+
 
 docker_build:
   stage: docker
@@ -71,8 +84,7 @@ docker_build:
     - docker
   only:
     - main
-    - dev
-    - merge_requests
+
 
 push:
   stage: push
@@ -88,5 +100,5 @@ push:
     - docker
   only:
     - main
-    - dev
-    - merge_requests
+    
+
