@@ -212,7 +212,7 @@
       <span class="text-[#4A4A4A]">
         ${msg("custom-noAccount","Pas de compte ?")}
       </span>
-      <a href="http://localhost:3000/register"
+      <a href="http://144.91.76.149:8081/register"
          class="text-[#6985C0] font-semibold hover:underline">
         ${msg("doRegister")}
       </a>
