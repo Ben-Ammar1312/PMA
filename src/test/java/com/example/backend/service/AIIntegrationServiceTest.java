@@ -21,7 +21,7 @@ public class AIIntegrationServiceTest {
         when(mockFolder.listFiles()).thenReturn(mockFiles);
         when(mockFile.isFile()).thenReturn(true);
         when(mockFile.getName()).thenReturn(patientId + "-patient1.json");
-        when(mockFile.getAbsolutePath()).thenReturn("/mock/path/dataJson/" + patientId + "-patient1.json");
+        when(mockFile.getAbsolutePath()).thenReturn("dataJson/" + patientId + "-patient1.json");
 
         FertilityRecordRepository mockRepo = mock(FertilityRecordRepository.class);
 
@@ -35,7 +35,7 @@ public class AIIntegrationServiceTest {
         String path = service.findPatientFilePath(patientId);
 
         assertNotNull(path);
-        assertEquals("/mock/path/dataJson/" + patientId + "-patient1.json", path);
+        assertEquals("dataJson/" + patientId + "-patient1.json", path);
     }
 
     @Test
