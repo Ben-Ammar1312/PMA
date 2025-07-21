@@ -1,9 +1,12 @@
 package com.example.backend.service;
+
+import com.example.backend.repository.FertilityRecordRepository;
+import org.junit.jupiter.api.Test;
+
+import java.io.File;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
-import org.junit.jupiter.api.Test;
-import java.io.File;
 
 public class AIIntegrationServiceTest {
 
@@ -13,14 +16,16 @@ public class AIIntegrationServiceTest {
 
         File mockFolder = mock(File.class);
         File mockFile = mock(File.class);
-        File[] mockFiles = new File[] { mockFile };
+        File[] mockFiles = new File[]{mockFile};
 
         when(mockFolder.listFiles()).thenReturn(mockFiles);
         when(mockFile.isFile()).thenReturn(true);
         when(mockFile.getName()).thenReturn(patientId + "-patient1.json");
         when(mockFile.getAbsolutePath()).thenReturn("/mock/path/dataJson/" + patientId + "-patient1.json");
 
-        AIIntegrationService service = new AIIntegrationService() {
+        FertilityRecordRepository mockRepo = mock(FertilityRecordRepository.class);
+
+        AIIntegrationService service = new AIIntegrationService(mockRepo) {
             @Override
             protected File getDataFolder() {
                 return mockFolder;
@@ -38,9 +43,16 @@ public class AIIntegrationServiceTest {
         String patientId = "notfound";
 
         File mockFolder = mock(File.class);
-        when(mockFolder.listFiles()).thenReturn(new File[0]);
+        File mockFile = mock(File.class);
+        File[] mockFiles = new File[]{mockFile};
 
-        AIIntegrationService service = new AIIntegrationService() {
+        when(mockFolder.listFiles()).thenReturn(mockFiles);
+        when(mockFile.isFile()).thenReturn(true);
+        when(mockFile.getName()).thenReturn("some-other-patient.json");
+
+        FertilityRecordRepository mockRepo = mock(FertilityRecordRepository.class);
+
+        AIIntegrationService service = new AIIntegrationService(mockRepo) {
             @Override
             protected File getDataFolder() {
                 return mockFolder;
@@ -49,6 +61,42 @@ public class AIIntegrationServiceTest {
 
         String path = service.findPatientFilePath(patientId);
 
+        assertNull(path);
+    }
+
+    @Test
+    public void testFindPatientFilePath_EmptyFolder() {
+        String patientId = "anything";
+
+        File mockFolder = mock(File.class);
+        when(mockFolder.listFiles()).thenReturn(new File[0]);
+
+        FertilityRecordRepository mockRepo = mock(FertilityRecordRepository.class);
+
+        AIIntegrationService service = new AIIntegrationService(mockRepo) {
+            @Override
+            protected File getDataFolder() {
+                return mockFolder;
+            }
+        };
+
+        String path = service.findPatientFilePath(patientId);
+
+        assertNull(path);
+    }
+
+    @Test
+    public void testFindPatientFilePath_NullFolder() {
+        FertilityRecordRepository mockRepo = mock(FertilityRecordRepository.class);
+
+        AIIntegrationService service = new AIIntegrationService(mockRepo) {
+            @Override
+            protected File getDataFolder() {
+                return null;
+            }
+        };
+
+        String path = service.findPatientFilePath("test");
         assertNull(path);
     }
 }
