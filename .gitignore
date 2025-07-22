@@ -36,3 +36,5 @@ src/main/resources/application.properties
 /.m2/*
 !/.m2/wrapper/**
 
+compose.yaml
+

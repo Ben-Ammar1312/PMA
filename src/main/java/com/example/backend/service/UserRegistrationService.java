@@ -22,13 +22,15 @@ public class UserRegistrationService {
     @Value("${keycloak.target-realm:PMA}")
     private String targetRealm;      // where users go
 
-    public void register(RegisterRequest request) {
+    public String register(RegisterRequest request) {
 
         UserRepresentation user = new UserRepresentation();
         user.setUsername(request.getEmail()); // use email as username
         user.setEmail(request.getEmail());
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
+        user.setEmailVerified(false);
+        user.setRequiredActions(List.of("VERIFY_EMAIL"));
         user.setEnabled(true);
 
         CredentialRepresentation cred = new CredentialRepresentation();
@@ -47,6 +49,19 @@ public class UserRegistrationService {
                     "Failed to create user in realm '" + targetRealm +
                             "': HTTP " + resp.getStatus());
         }
-    }
 
-}
+        // location header ends with the new user's id
+        String userId = resp.getLocation().getPath()
+                .substring(resp.getLocation().getPath().lastIndexOf('/') + 1);
+
+    /* 3️⃣  Send the verification e-mail right away.
+           (This is optional – if you skip it, Keycloak will still show
+            the ‘Verify e-mail’ page next time the user tries to log in.) */
+        keycloak.realm(targetRealm)
+                .users()
+                .get(userId)
+                .sendVerifyEmail();           // ← does the POST …/send-verify-email call
+
+        return userId;
+
+}}
