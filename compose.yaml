@@ -4,7 +4,7 @@ services:
   # ---------------------------------
   mongodb:
     image: mongo:latest
-    container_name: mongodb
+    container_name: mongodb_db
     ports:
       - "27017:27017"
     environment:
@@ -19,7 +19,7 @@ services:
   # ---------------------------------
   db:
     image: postgres:16
-    container_name: keycloak_db
+    container_name: keycloak_db_db
     restart: unless-stopped
     environment:
       POSTGRES_DB: keycloak
@@ -48,7 +48,7 @@ services:
       KC_DB_PASSWORD: kcpass
     command: start-dev
     volumes:
-    - ./themes/my-nest-login:/opt/keycloak/themes/my-nest-login
+    - ./themes/wishborn:/opt/keycloak/themes/my-nest-login
 
 volumes:
   mongo_data:   # persistent volume for MongoDB
