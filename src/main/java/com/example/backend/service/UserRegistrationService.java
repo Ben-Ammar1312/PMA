@@ -5,6 +5,7 @@ import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -50,18 +51,30 @@ public class UserRegistrationService {
                             "': HTTP " + resp.getStatus());
         }
 
-        // location header ends with the new user's id
+        // Extract user ID from response
         String userId = resp.getLocation().getPath()
                 .substring(resp.getLocation().getPath().lastIndexOf('/') + 1);
 
-    /* 3️⃣  Send the verification e-mail right away.
-           (This is optional – if you skip it, Keycloak will still show
-            the ‘Verify e-mail’ page next time the user tries to log in.) */
+        // ✅ 1. Get the 'patient' role from realm
+        RoleRepresentation patientRole = keycloak.realm(targetRealm)
+                .roles()
+                .get("Patient")
+                .toRepresentation();
+
+        // ✅ 2. Assign the role to the user
         keycloak.realm(targetRealm)
                 .users()
                 .get(userId)
-                .sendVerifyEmail();           // ← does the POST …/send-verify-email call
+                .roles()
+                .realmLevel()
+                .add(List.of(patientRole));
+
+        // ✅ 3. Optionally send verification email
+        keycloak.realm(targetRealm)
+                .users()
+                .get(userId)
+                .sendVerifyEmail();
 
         return userId;
-
-}}
+    }
+}

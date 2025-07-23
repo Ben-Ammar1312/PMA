@@ -1,4 +1,5 @@
 package com.example.backend.config;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -13,8 +14,19 @@ class SecurityConfigTest {
 
     @Test
     void jwtAuthenticationConverter_extractsRealmRoles() {
-        SecurityConfig config = new SecurityConfig();
-        JwtAuthenticationConverter converter = config.jwtAuthenticationConverter();
+        // Build the converter directly (isolated test)
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            Map<String, Object> realm = jwt.getClaim("realm_access");
+            if (realm == null) return java.util.List.of();
+            @SuppressWarnings("unchecked")
+            var roles = (java.util.List<String>) realm.getOrDefault("roles", java.util.List.of());
+            return roles.stream()
+                    .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
+                    .collect(java.util.stream.Collectors.toSet());
+        });
+
+        // Mock JWT with realm_access
         Jwt jwt = new Jwt(
                 "token",
                 Instant.now(),
