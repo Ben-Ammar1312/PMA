@@ -29,7 +29,8 @@ public class FileStorageService {
     /**
      * Store under uploadRoot/<patientCode>/<originalFilename>
      */
-    public Path store(MultipartFile file, String patientId) throws IOException {
+    public Path store(MultipartFile file, String patientId, String logicalName,
+                      Integer counter ) throws IOException {
         String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
         if (originalFilename.contains("..")) {
             throw new IOException("Invalid path sequence in file name: " + originalFilename);
@@ -43,23 +44,45 @@ public class FileStorageService {
         Path patientDir = uploadRoot.resolve(subDirName);
         Files.createDirectories(patientDir);
 
-        // Extract base name and extension from original filename
-        String baseName = originalFilename;
-        String extension = "";
-        int dotIndex = originalFilename.lastIndexOf('.');
+        String extension  = "";
+        int dotIndex      = file.getOriginalFilename().lastIndexOf('.');
         if (dotIndex != -1) {
-            baseName = originalFilename.substring(0, dotIndex);
-            extension = originalFilename.substring(dotIndex);
+            extension = file.getOriginalFilename().substring(dotIndex); // includes the dot
         }
 
-        // New filename: baseName_date.extension
-        String newFilename = baseName + "_" + formattedDate + extension;
+        StringBuilder sb = new StringBuilder();
+        sb.append(logicalName);
+        if (counter != null) sb.append('_')
+                .append(counter);
+        sb.append('_').append(formattedDate)
+                .append(extension);
 
-        // Copy the file
-        Path target = patientDir.resolve(newFilename);
+        Path target = patientDir.resolve(sb.toString());
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-
         return target;
+    }
+
+    /**
+     * Back-compat helper: keep the old signature so existing tests (and any
+     * other callers you forgot about) still compile.
+     * <p>
+     * Uses the original file’s base name as the logical name and no counter.
+     */
+    public Path store(MultipartFile file, String patientId) throws IOException {
+        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
+        if (originalFilename.contains("..")) {
+            throw new IOException("Invalid path sequence in file name: " + originalFilename);
+        }
+
+        // derive logicalName = base part of the original file name
+        String logicalName = originalFilename;
+        int dotIndex = originalFilename.lastIndexOf('.');
+        if (dotIndex != -1) {
+            logicalName = originalFilename.substring(0, dotIndex);
+        }
+
+        // delegate to the new method
+        return store(file, patientId, logicalName, null);
     }
 
 

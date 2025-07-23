@@ -13,8 +13,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
 @RestController
 @RequestMapping("/patient")
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class PatientController {
 
     private final FertilityRecordService fertilityRecordService;
     private final FileStorageService fileStorageService;
+
 
     @Operation(summary = "Submit or update the authenticated user's record")
     @PostMapping(
@@ -44,21 +46,31 @@ public class PatientController {
             // the array of “other” documents
             @RequestPart(value = "autreDocumentFiles",       required = false) MultipartFile[] autreDocumentFiles
     ) throws IOException {
+        log.debug("autreDocumentFiles = {}",
+                autreDocumentFiles == null ? "null" : autreDocumentFiles.length);
         // 1) persist your record
         record.setId(jwt.getSubject());
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
         String patientId = saved.getId();
 
         // 2) store each of the four single uploads if present
-        if (bilanHormonalFile        != null) fileStorageService.store(bilanHormonalFile,        patientId);
-        if (echographiePelvienneFile != null) fileStorageService.store(echographiePelvienneFile, patientId);
-        if (hsgFile                  != null) fileStorageService.store(hsgFile,                  patientId);
-        if (spermogrammeFile         != null) fileStorageService.store(spermogrammeFile,         patientId);
+        if (bilanHormonalFile        != null) fileStorageService.store(bilanHormonalFile,        patientId,"bilanHormonal",null);
+        if (echographiePelvienneFile != null) fileStorageService.store(echographiePelvienneFile, patientId,"echographiePelvienne",null);
+        if (hsgFile                  != null) fileStorageService.store(hsgFile,                  patientId,"hsgFile",null);
+        if (spermogrammeFile         != null) fileStorageService.store(spermogrammeFile,         patientId,"spermogrammeFile",null);
 
-        // 3) store the rest
+        // “Other” documents ➜ logical name fixed, counter increments
         if (autreDocumentFiles != null) {
+            int counter = 1;
             for (MultipartFile f : autreDocumentFiles) {
-                fileStorageService.store(f, patientId);
+                if (f != null && !f.isEmpty()) {          // ✅ guard
+                    fileStorageService.store(
+                            f,
+                            patientId,
+                            "autreDocument",
+                            counter++                     // only increment when we actually stored something
+                    );
+                }
             }
         }
     }
