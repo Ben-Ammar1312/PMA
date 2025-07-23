@@ -23,6 +23,25 @@ import java.util.stream.Collectors;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    private final CorsProperties corsProps;
+
+    public SecurityConfig(CorsProperties corsProps) {
+        this.corsProps = corsProps;
+    }
+
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.setAllowedOrigins(corsProps.getAllowedOrigins());
+        cfg.setAllowedMethods(corsProps.getAllowedMethods());
+        cfg.setAllowedHeaders(corsProps.getAllowedHeaders());
+        cfg.setAllowCredentials(corsProps.isAllowCredentials());
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", cfg);
+        return source;
+    }
+
     /**
      * Convert Keycloak's realm_access.roles → Spring Security ROLE_...
      */
@@ -73,7 +92,7 @@ public class SecurityConfig {
 
                         // 2) signup
                         .requestMatchers(HttpMethod.POST, "/register").permitAll()
-                        .requestMatchers("/ai/**").permitAll()
+                        .requestMatchers("/ai/**").hasRole("Doctor")
 
 
                         // 3) doctor endpoints
@@ -95,16 +114,5 @@ public class SecurityConfig {
      * CORS configuration so that your Next.js front
      * at http://localhost:3000 can talk to this API.
      */
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        var cfg = new CorsConfiguration();
-        cfg.setAllowedOrigins(List.of("http://localhost:3000"));
-        cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","OPTIONS"));
-        cfg.setAllowedHeaders(List.of("*"));
-        cfg.setAllowCredentials(true);
 
-        var source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", cfg);
-        return source;
-    }
 }

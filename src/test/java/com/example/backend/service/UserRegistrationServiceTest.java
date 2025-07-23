@@ -6,15 +6,17 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.admin.client.Keycloak;
-import org.keycloak.admin.client.resource.RealmResource;
-import org.keycloak.admin.client.resource.UserResource;
-import org.keycloak.admin.client.resource.UsersResource;
+import org.keycloak.admin.client.resource.*;
+import org.keycloak.representations.idm.RoleRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -25,8 +27,11 @@ class UserRegistrationServiceTest {
     @Mock private Keycloak keycloak;
     @Mock private RealmResource realmResource;
     @Mock private UsersResource usersResource;
-    @Mock private Response response;
+    @Mock private RolesResource rolesResource;
+    @Mock private RoleResource roleResource;
     @Mock private UserResource userResource;
+    @Mock private Response response;
+    @Mock private RoleScopeResource roleScopeResource;
 
     @InjectMocks private UserRegistrationService registrationService;
 
@@ -46,23 +51,34 @@ class UserRegistrationServiceTest {
                 .build();
 
         URI location = URI.create("http://keycloak/realms/PMA/users/123");
+        RoleRepresentation patientRole = new RoleRepresentation("Patient", null, false);
 
         when(keycloak.realm("PMA")).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);
-        when(usersResource.create(any())).thenReturn(response);
+        when(usersResource.create(any(UserRepresentation.class))).thenReturn(response);
         when(response.getStatus()).thenReturn(201);
         when(response.getLocation()).thenReturn(location);
+
         when(usersResource.get("123")).thenReturn(userResource);
+        when(userResource.roles()).thenReturn(mock(RoleMappingResource.class));
+        when(userResource.roles().realmLevel()).thenReturn(roleScopeResource);
+        doNothing().when(roleScopeResource).add(List.of(patientRole));
+
+        when(realmResource.roles()).thenReturn(rolesResource);
+        when(rolesResource.get("Patient")).thenReturn(roleResource);
+        when(roleResource.toRepresentation()).thenReturn(patientRole);
+
         doNothing().when(userResource).sendVerifyEmail();
 
         // Act
-        String id = registrationService.register(request);
+        String userId = registrationService.register(request);
 
         // Assert
-        assertEquals("123", id);
+        assertEquals("123", userId);
         verify(usersResource).create(any());
-        verify(usersResource).get("123");
+        verify(usersResource, times(2)).get("123");
         verify(userResource).sendVerifyEmail();
+        verify(roleScopeResource).add(List.of(patientRole));
     }
 
     @Test
