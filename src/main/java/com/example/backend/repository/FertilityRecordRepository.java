@@ -18,4 +18,6 @@ public interface FertilityRecordRepository
     // Example: records where result is 'PREGNANCY'
     List<FertilityRecord> findByTreatmentsCycleOutcomeEquals(String resultCycle);
 
+    List<FertilityRecord> findAllByMalePartner_PersonalInfo_FirstNameIsNotNull();
+
 }
