@@ -212,8 +212,10 @@
       <span class="text-[#4A4A4A]">
         ${msg("custom-noAccount","Pas de compte ?")}
       </span>
-      <a href="http://144.91.76.149:8081/register"
-         class="text-[#6985C0] font-semibold hover:underline">
+      <a id="signup-external"
+         href="${properties['frontend_url']?no_esc}/register"
+         class="text-[#6985C0] font-semibold hover:underline"
+         target="_blank" rel="noopener">
         ${msg("doRegister")}
       </a>
     </div>

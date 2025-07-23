@@ -48,6 +48,7 @@ public class AIIntegrationService {
             return Map.of("error", "Patient file not found for ID: " + patientId);
         }
         JsonPathRequest requestBody = new JsonPathRequest(filePath);
+        System.out.println(requestBody);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<JsonPathRequest> entity = new HttpEntity<>(requestBody, headers);
@@ -55,9 +56,11 @@ public class AIIntegrationService {
         try {
             ResponseEntity<Map> response = restTemplate.postForEntity(FAST_API_URL, entity, Map.class);
             Map<String, Object> summaryData = response.getBody();
+            System.out.println(summaryData);
 
-            if (summaryData != null && summaryData.containsKey("summary_fr")) {
-                String overallSummary = (String) summaryData.get("summary_fr");
+            if (summaryData != null && summaryData.containsKey("Overall Summary")) {
+                String overallSummary = (String) summaryData.get("Overall Summary");
+                System.out.println(overallSummary);
 
                 fertilityRecordRepository.findById(patientId).ifPresent(record -> {
                     record.setSummary(overallSummary);
