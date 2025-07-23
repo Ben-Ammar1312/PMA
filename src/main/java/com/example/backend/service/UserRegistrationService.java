@@ -23,7 +23,7 @@ public class UserRegistrationService {
     @Value("${keycloak.target-realm:PMA}")
     private String targetRealm;      // where users go
 
-    public String register(RegisterRequest request) {
+    public List<String> register(RegisterRequest request) {
 
         UserRepresentation user = new UserRepresentation();
         user.setUsername(request.getEmail()); // use email as username
@@ -75,6 +75,6 @@ public class UserRegistrationService {
                 .get(userId)
                 .sendVerifyEmail();
 
-        return userId;
+        return List.of(userId, user.getFirstName(), user.getLastName(), user.getEmail());
     }
 }

@@ -6,7 +6,7 @@ services:
     image: mongo:latest
     container_name: mongodb_db
     ports:
-      - "27017:27017"
+      - "27018:27017"
     environment:
       MONGO_INITDB_DATABASE: mydatabase
       MONGO_INITDB_ROOT_USERNAME: root

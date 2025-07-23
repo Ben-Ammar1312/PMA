@@ -10,9 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth")
 public class AuthController {
 
     private final UserRegistrationService registrationService;
@@ -20,10 +21,9 @@ public class AuthController {
 
     @Operation(summary = "Register a new user")
     @PostMapping("/register")
-    @CrossOrigin(origins = "http://localhost:3000")
     @ResponseStatus(HttpStatus.CREATED)
     public void register(@Valid @RequestBody RegisterRequest request) {
-        String userId = registrationService.register(request);
-        fertilityRecordService.createRecordForUser(userId);
+        List<String> userInfo = registrationService.register(request);
+        fertilityRecordService.createRecordForUser(userInfo);
     }
 }

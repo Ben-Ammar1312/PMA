@@ -16,7 +16,6 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -32,6 +31,7 @@ class UserRegistrationServiceTest {
     @Mock private UserResource userResource;
     @Mock private Response response;
     @Mock private RoleScopeResource roleScopeResource;
+    @Mock private RoleMappingResource roleMappingResource;
 
     @InjectMocks private UserRegistrationService registrationService;
 
@@ -60,8 +60,9 @@ class UserRegistrationServiceTest {
         when(response.getLocation()).thenReturn(location);
 
         when(usersResource.get("123")).thenReturn(userResource);
-        when(userResource.roles()).thenReturn(mock(RoleMappingResource.class));
-        when(userResource.roles().realmLevel()).thenReturn(roleScopeResource);
+
+        when(userResource.roles()).thenReturn(roleMappingResource);
+        when(roleMappingResource.realmLevel()).thenReturn(roleScopeResource);
         doNothing().when(roleScopeResource).add(List.of(patientRole));
 
         when(realmResource.roles()).thenReturn(rolesResource);
@@ -71,11 +72,17 @@ class UserRegistrationServiceTest {
         doNothing().when(userResource).sendVerifyEmail();
 
         // Act
-        String userId = registrationService.register(request);
+        List<String> result = registrationService.register(request);
 
         // Assert
-        assertEquals("123", userId);
-        verify(usersResource).create(any());
+        assertNotNull(result);
+        assertEquals(4, result.size());
+        assertEquals("123", result.get(0));       // userId
+        assertEquals("John", result.get(1));      // firstName
+        assertEquals("Doe", result.get(2));       // lastName
+        assertEquals("test@example.com", result.get(3));  // email
+
+        verify(usersResource).create(any(UserRepresentation.class));
         verify(usersResource, times(2)).get("123");
         verify(userResource).sendVerifyEmail();
         verify(roleScopeResource).add(List.of(patientRole));
