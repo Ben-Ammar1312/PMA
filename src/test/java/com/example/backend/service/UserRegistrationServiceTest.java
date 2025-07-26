@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.exception.UserRegistrationException;
 import com.example.backend.model.RegisterRequest;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,10 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
+
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -97,7 +97,7 @@ class UserRegistrationServiceTest {
         when(response.getStatus()).thenReturn(409); // Conflict
 
         // Act & Assert
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        RuntimeException exception = assertThrows(UserRegistrationException.class,
                 () -> registrationService.register(request)
         );
 

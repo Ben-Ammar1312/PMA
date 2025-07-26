@@ -12,6 +12,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.util.Map;
+import java.util.Optional;
 
 
 @Service
@@ -46,31 +47,34 @@ public class AIIntegrationService {
 
 
     public Map<String, Object> generateSummary(String patientId) {
-        String filePath = findPatientFilePath(patientId);
-        JsonPathRequest requestBody = new JsonPathRequest(filePath);
+        String filePath = findPatientFilePath(patientId); // now throws ResourceNotFoundException
+        JsonPathRequest body = new JsonPathRequest(filePath);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<JsonPathRequest> entity = new HttpEntity<>(requestBody, headers);
-        Map<String, Object> summaryData;
+        HttpEntity<JsonPathRequest> entity = new HttpEntity<>(body, headers);
+
+        ResponseEntity<Map> resp;
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(FAST_API_URL, entity, Map.class);
-            summaryData = response.getBody();
+            resp = restTemplate.postForEntity(FAST_API_URL, entity, Map.class);
         } catch (RestClientException e) {
-            throw new AIServiceException("Error calling AI service ", e);
+            throw new AIServiceException("Error calling summarization service", e);
         }
-        if (summaryData == null) {
-            throw new AIServiceException("Empty response from summarization service");
-        }
-        Object overall = summaryData.get("Overall Summary");
-        if (!(overall instanceof String)) {
+
+        Map<String, Object> payload = Optional.ofNullable(resp)
+                .map(ResponseEntity::getBody)
+                .orElseThrow(() -> new AIServiceException("Empty response from summarization service"));
+
+        Object overall = payload.get("Overall Summary");
+        if (!(overall instanceof String s)) {
             throw new AIServiceException("Missing or invalid 'Overall Summary' field");
         }
 
-        fertilityRecordRepository.findById(patientId).ifPresent(record -> {
-            record.setSummary((String) overall);
-            fertilityRecordRepository.save(record);
+        fertilityRecordRepository.findById(patientId).ifPresent(r -> {
+            r.setSummary(s);
+            fertilityRecordRepository.save(r);
         });
-        return summaryData;
+
+        return payload;
     }
 
 

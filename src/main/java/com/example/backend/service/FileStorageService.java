@@ -66,10 +66,9 @@ public class FileStorageService {
 
         Path target = patientDir.resolve(name.toString());
 
-        try {
-            return Files.copy(file.getInputStream(),
-                    target,
-                    StandardCopyOption.REPLACE_EXISTING);
+        try (var in = file.getInputStream()) {
+            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+            return target;
         } catch (IOException e) {
             throw new FileStorageException(
                     "Failed to store file " + originalFilename + " for patient " + patientId, e);
@@ -142,4 +141,4 @@ public class FileStorageService {
 
 
 
-}}
+}

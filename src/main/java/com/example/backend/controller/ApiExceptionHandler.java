@@ -23,18 +23,18 @@ public class ApiExceptionHandler {
     @ExceptionHandler(FileStorageException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Map<String, String> handleFileError(FileStorageException ex) {
-        return Map.of("error", "File operation failed");
+        return Map.of("error", "File operation failed : "+ ex.getMessage());
     }
 
     @ExceptionHandler(UserRegistrationException.class)
-    @ResponseStatus(HttpStatus.BAD_GATEWAY)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Map<String, String> handleKeycloak(UserRegistrationException ex) {
         return Map.of("error", ex.getMessage());
     }
 
     @ExceptionHandler(AIServiceException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.BAD_GATEWAY)
     public Map<String, String> handleAI(AIServiceException ex) {
-        return Map.of("error", "AI summarization failed");
+        return Map.of("error", "AI summarization failed : "+ ex.getMessage());
     }
 }

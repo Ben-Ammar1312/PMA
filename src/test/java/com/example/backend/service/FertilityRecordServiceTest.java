@@ -25,6 +25,8 @@ class FertilityRecordServiceTest {
     @Mock PelvicUltrasoundRepository        pelvicUltrasoundRepository;
     @Mock SpermogramRepository              spermogramRepository;
     @Mock MedicalAttachmentRepository       medicalAttachmentRepository;
+    @Mock RadiologyReportRepository radiologyReportRepository;
+    @Mock SurgicalReportRepository surgicalReportRepository;
 
     @InjectMocks FertilityRecordService service;
 
@@ -73,6 +75,9 @@ class FertilityRecordServiceTest {
         PelvicUltrasound        pelv  = PelvicUltrasound       .builder().build();
         Spermogram              sper  = Spermogram             .builder().build();
         MedicalAttachment       att   = MedicalAttachment      .builder().build();
+        RadiologyReport              radio  = RadiologyReport             .builder().build();
+        SurgicalReport       surg   = SurgicalReport      .builder().build();
+
 
 
         when(microbiologyResultRepository    .findByRecordId(nullable(String.class))).thenReturn(List.of(micro));
@@ -81,6 +86,8 @@ class FertilityRecordServiceTest {
         when(pelvicUltrasoundRepository      .findByRecordId(nullable(String.class))).thenReturn(List.of(pelv));
         when(spermogramRepository            .findByRecordId(nullable(String.class))).thenReturn(List.of(sper));
         when(medicalAttachmentRepository     .findByRecordId(nullable(String.class))).thenReturn(List.of(att));
+        when(radiologyReportRepository     .findByRecordId(nullable(String.class))).thenReturn(List.of(radio));
+        when( surgicalReportRepository    .findByRecordId(nullable(String.class))).thenReturn(List.of(surg));
 
         FertilityRecordDetails details = service.getFullFertilityRecord("rid");
 
@@ -91,5 +98,30 @@ class FertilityRecordServiceTest {
         assertEquals(List.of(pelv),  details.getPelvicUltrasounds());
         assertEquals(List.of(sper),  details.getSpermograms());
         assertEquals(List.of(att),   details.getMedicalAttachments());
+        assertEquals(List.of(radio),   details.getRadiologyReports());
+        assertEquals(List.of(surg),   details.getSurgicalReports());
+    }
+
+    @Test
+    void getAllRecords_returnsList() {
+        FertilityRecord rec1 = new FertilityRecord();
+        FertilityRecord rec2 = new FertilityRecord();
+        List<FertilityRecord> all = List.of(rec1, rec2);
+        when(fertilityRecordRepository.findAll()).thenReturn(all);
+        List<FertilityRecord> result = service.getAllRecords();
+        assertEquals(all, result);
+    }
+
+    @Test
+    void createRecordForUser_savesRecordWithId() {
+        service.createRecordForUser("user-1");
+        verify(fertilityRecordRepository).save(argThat(rec -> "user-1".equals(rec.getId())));
+    }
+
+    @Test
+    void getSummary_returnsRecordSummary() {
+        FertilityRecord rec = FertilityRecord.builder().id("abc").summary("hello").build();
+        when(fertilityRecordRepository.findById("abc")).thenReturn(Optional.of(rec));
+        assertEquals("hello", service.getSummary("abc"));
     }
 }
