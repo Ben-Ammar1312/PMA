@@ -26,5 +26,7 @@ public class FertilityRecordDetails {
     private List<PelvicUltrasound> pelvicUltrasounds;
     private List<Spermogram> spermograms;
     private List<MedicalAttachment> medicalAttachments;
+    private List<RadiologyReport> radiologyReports;
+    private List<SurgicalReport> surgicalReports;
 }
 

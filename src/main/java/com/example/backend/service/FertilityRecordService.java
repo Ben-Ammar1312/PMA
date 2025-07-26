@@ -1,8 +1,8 @@
 package com.example.backend.service;
 
+import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
-import jakarta.ws.rs.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +16,9 @@ public class FertilityRecordService {
     final PelvicUltrasoundRepository pelvicUltrasoundRepository;
     final SpermogramRepository spermogramRepository;
     final MedicalAttachmentRepository medicalAttachmentRepository;
+    final RadiologyReportRepository radiologyReportRepository;
+    final SurgicalReportRepository surgicalReportRepository;
+
 
     public FertilityRecord addFertilityRecord(FertilityRecord fertilityRecord) {
         return fertilityRecordRepository.save(fertilityRecord);
@@ -23,11 +26,11 @@ public class FertilityRecordService {
 
     public FertilityRecord getFertilityRecord(String id) {
         return fertilityRecordRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Fertility record not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Fertility Record not found with id " + id));
     }
 
     public String getSummary(String id){
-        return fertilityRecordRepository.findById(id).get().getSummary();
+        return getFertilityRecord(id).getSummary();
     }
 
     /**
@@ -37,10 +40,7 @@ public class FertilityRecordService {
     public FertilityRecordDetails getFullFertilityRecord(String recordId) {
 
         // ① Fetch the master document by its id
-        FertilityRecord record = fertilityRecordRepository
-                .findById(recordId)
-                .orElseThrow(() -> new NotFoundException(
-                        "Fertility record with id=" + recordId + " not found"));
+        FertilityRecord record = getFertilityRecord(recordId);
         var rid = record.getId();   // keep using the _id to join child docs
 
         // ② Build the DTO
@@ -52,15 +52,17 @@ public class FertilityRecordService {
                 .pelvicUltrasounds       (pelvicUltrasoundRepository       .findByRecordId(rid))
                 .spermograms             (spermogramRepository             .findByRecordId(rid))
                 .medicalAttachments      (medicalAttachmentRepository      .findByRecordId(rid))
+                .radiologyReports        (radiologyReportRepository         .findByRecordId(rid))
+                .surgicalReports         (surgicalReportRepository           .findByRecordId(rid))
                 .build();
     }
 
     /** create an empty fertility record for a newly registered user */
-    public FertilityRecord createRecordForUser(String userId) {
+    public void createRecordForUser(String userId) {
         FertilityRecord record = FertilityRecord.builder()
                 .id(userId)
                 .build();
-        return fertilityRecordRepository.save(record);
+        fertilityRecordRepository.save(record);
     }
 
     /** return all fertility records */
