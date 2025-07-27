@@ -1,33 +1,37 @@
 package com.example.backend.service;
 
-import com.example.backend.model.FertilityRecord;
+import com.example.backend.exception.AIServiceException;
+import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.requests.JsonPathRequest;
 import com.example.backend.repository.FertilityRecordRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
-
 import java.io.File;
 import java.util.Map;
 import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
 public class AIIntegrationService {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private static final String FAST_API_URL = "http://144.91.76.149:8000/summarize_json";
+    @Value("${FAST_API_URL}")
+    private  String FAST_API_URL;
     private final FertilityRecordRepository fertilityRecordRepository;
 
     public String findPatientFilePath(String patientId) {
         File folder = getDataFolder();
         if (folder == null) {
-            return null;
+            throw new ResourceNotFoundException("/dataJson folder not found");
         }
 
         File[] files = folder.listFiles();
-        if (files == null) return null;
+        if (files == null) throw new ResourceNotFoundException("/dataJson folder empty");
 
         for (File file : files) {
             if (file.isFile()
@@ -37,50 +41,49 @@ public class AIIntegrationService {
                 return "dataJson/" + file.getName();
             }
         }
-        return null;
+        throw new ResourceNotFoundException("Patient's files not found");
     }
 
 
 
     public Map<String, Object> generateSummary(String patientId) {
-        String filePath = findPatientFilePath(patientId);
-        if (filePath == null) {
-            return Map.of("error", "Patient file not found for ID: " + patientId);
-        }
-        JsonPathRequest requestBody = new JsonPathRequest(filePath);
-        System.out.println(requestBody);
+        String filePath = findPatientFilePath(patientId); // now throws ResourceNotFoundException
+        JsonPathRequest body = new JsonPathRequest(filePath);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<JsonPathRequest> entity = new HttpEntity<>(requestBody, headers);
+        HttpEntity<JsonPathRequest> entity = new HttpEntity<>(body, headers);
 
+        ResponseEntity<Map> resp;
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(FAST_API_URL, entity, Map.class);
-            Map<String, Object> summaryData = response.getBody();
-            System.out.println(summaryData);
-
-            if (summaryData != null && summaryData.containsKey("Overall Summary")) {
-                String overallSummary = (String) summaryData.get("Overall Summary");
-                System.out.println(overallSummary);
-
-                fertilityRecordRepository.findById(patientId).ifPresent(record -> {
-                    record.setSummary(overallSummary);
-                    fertilityRecordRepository.save(record);
-                });
-            }
-
-            return summaryData != null ? summaryData : Map.of("error", "Empty response from summarization service");
-
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return Map.of("error", "Failed to generate summary: " + ex.getMessage());
+            resp = restTemplate.postForEntity(FAST_API_URL, entity, Map.class);
+        } catch (RestClientException e) {
+            throw new AIServiceException("Error calling summarization service", e);
         }
+
+        Map<String, Object> payload = Optional.ofNullable(resp)
+                .map(ResponseEntity::getBody)
+                .orElseThrow(() -> new AIServiceException("Empty response from summarization service"));
+
+        Object overall = payload.get("Overall Summary");
+        if (!(overall instanceof String s)) {
+            throw new AIServiceException("Missing or invalid 'Overall Summary' field");
+        }
+
+        fertilityRecordRepository.findById(patientId).ifPresent(r -> {
+            r.setSummary(s);
+            fertilityRecordRepository.save(r);
+        });
+
+        return payload;
     }
+
 
 
 
 
     protected File getDataFolder() {
         File folder= new File("dataJson");;
+
         return folder;
     }
 }
