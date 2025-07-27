@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
@@ -27,6 +28,7 @@ public class PatientController {
 
     private final FertilityRecordService fertilityRecordService;
     private final FileStorageService fileStorageService;
+
 
     @Operation(summary = "Submit or update the authenticated user's record")
     @PostMapping(
@@ -47,6 +49,7 @@ public class PatientController {
 
             // the array of “other” documents
             @RequestPart(value = "autreDocumentFiles",       required = false) MultipartFile[] autreDocumentFiles
+
     ){
 
         // 1) persist your record
@@ -55,6 +58,7 @@ public class PatientController {
         String patientId = saved.getId();
 
         // 2) store each of the four single uploads if present
+
 
         if (bilanHormonalFile        != null) fileStorageService.store(bilanHormonalFile,        patientId,"bilanHormonal",null);
         if (echographiePelvienneFile != null) fileStorageService.store(echographiePelvienneFile, patientId,"echographiePelvienne",null);
@@ -75,6 +79,12 @@ public class PatientController {
                 }
             }
         }
+
+    
+
+
+
+
 
         return ResponseEntity.status(HttpStatus.CREATED).build();
 }
@@ -105,4 +115,11 @@ public class PatientController {
 
 
 
-}}
+}
+
+    @Operation(summary="get patient's partial record by id to check if record was fully submitted")
+    @GetMapping("/me/{id}")
+    public FertilityRecord getPatientRecord(@PathVariable String id){
+        return fertilityRecordService.getFertilityRecord(id);
+    }}
+

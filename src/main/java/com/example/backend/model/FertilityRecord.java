@@ -30,4 +30,6 @@ public class FertilityRecord {
     private Instant created;
     private Instant updated;
     private Integer version;
+
+    private Boolean submitted;
 }

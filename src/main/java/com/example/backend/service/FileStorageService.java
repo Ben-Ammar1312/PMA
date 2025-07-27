@@ -40,6 +40,7 @@ public class FileStorageService {
     /**
      * Store under uploadRoot/<patientId>_<date>/logicalName[_counter]_<date>.<ext>
      */
+
     public Path store(MultipartFile file,
                       String patientId,
                       String logicalName,
@@ -64,6 +65,7 @@ public class FileStorageService {
         name.append('_').append(LocalDate.now())
                 .append(ext);
 
+
         Path target = patientDir.resolve(name.toString());
 
         try (var in = file.getInputStream()) {
@@ -74,6 +76,7 @@ public class FileStorageService {
                     "Failed to store file " + originalFilename + " for patient " + patientId, e);
         }
     }
+
 
 
 
@@ -137,7 +140,6 @@ public class FileStorageService {
                     "Could not resolve or create directory for patient " + patientId, e);
         }
     }
-
 
 
 

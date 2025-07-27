@@ -36,4 +36,6 @@ public class DoctorController {
     public String getPatientSummary(@PathVariable String id) {
         return fertilityRecordService.getSummary(id);
     }
+
+
 }

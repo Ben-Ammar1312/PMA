@@ -6,6 +6,8 @@ import com.example.backend.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class FertilityRecordService {
@@ -58,16 +60,44 @@ public class FertilityRecordService {
     }
 
     /** create an empty fertility record for a newly registered user */
-    public void createRecordForUser(String userId) {
+    public FertilityRecord createRecordForUser(List<String> userData) {
+        if (userData == null || userData.size() < 4) {
+            throw new IllegalArgumentException("User data list must contain at least 4 elements: userId, firstName, lastName, email");
+        }
+
+        String userId = userData.get(0);
+        String firstName = userData.get(1);
+        String lastName = userData.get(2);
+        String email = userData.get(3);
+
         FertilityRecord record = FertilityRecord.builder()
                 .id(userId)
+                .femalePartner(
+                        Partner.builder()
+                                .personalInfo(
+                                        PersonalInfo.builder()
+                                                .email(email)
+                                                .firstName(firstName)
+                                                .lastName(lastName)
+                                                // set other personal info fields if needed
+                                                .build()
+                                )
+                                // you can set medicalHistory, lifestyle, fertility here as well if needed
+                                .build()
+                )
+                // you can set couple, malePartner, treatments, etc.
                 .build();
-        fertilityRecordRepository.save(record);
+
+
+        return fertilityRecordRepository.save(record);
+
     }
+
 
     /** return all fertility records */
     public java.util.List<FertilityRecord> getAllRecords() {
-        return fertilityRecordRepository.findAll();
+
+        return fertilityRecordRepository.findAllByMalePartner_PersonalInfo_FirstNameIsNotNull();
     }
 
 }

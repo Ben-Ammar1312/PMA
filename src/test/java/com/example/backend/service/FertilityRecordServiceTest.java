@@ -124,4 +124,53 @@ class FertilityRecordServiceTest {
         when(fertilityRecordRepository.findById("abc")).thenReturn(Optional.of(rec));
         assertEquals("hello", service.getSummary("abc"));
     }
+
+    @Test
+    void createRecordForUser_shouldSaveAndReturnRecord() {
+        List<String> userData = List.of("user123", "Jane", "Doe", "jane.doe@example.com");
+
+        FertilityRecord savedRecord = FertilityRecord.builder()
+                .id("user123")
+                .femalePartner(
+                        Partner.builder()
+                                .personalInfo(
+                                        PersonalInfo.builder()
+                                                .email("jane.doe@example.com")
+                                                .firstName("Jane")
+                                                .lastName("Doe")
+                                                .build()
+                                )
+                                .build()
+                )
+                .build();
+
+        when(fertilityRecordRepository.save(any(FertilityRecord.class))).thenReturn(savedRecord);
+
+        FertilityRecord result = service.createRecordForUser(userData);
+
+        // Verify repository save called once
+        verify(fertilityRecordRepository, times(1)).save(any(FertilityRecord.class));
+
+        // Assert the returned record is the saved one
+        assertSame(savedRecord, result);
+
+        // Optional: capture argument to verify fields (using ArgumentCaptor)
+        // or just verify fields directly on `result` if equals/hashCode implemented
+
+        assertEquals("user123", result.getId());
+        assertNotNull(result.getFemalePartner());
+        assertNotNull(result.getFemalePartner().getPersonalInfo());
+        assertEquals("Jane", result.getFemalePartner().getPersonalInfo().getFirstName());
+        assertEquals("Doe", result.getFemalePartner().getPersonalInfo().getLastName());
+        assertEquals("jane.doe@example.com", result.getFemalePartner().getPersonalInfo().getEmail());
+    }
+
+    @Test
+    void createRecordForUser_shouldThrowIllegalArgumentException_whenInvalidInput() {
+        List<String> invalidData1 = null;
+        List<String> invalidData2 = List.of("onlyOneElement");
+
+        assertThrows(IllegalArgumentException.class, () -> service.createRecordForUser(invalidData1));
+        assertThrows(IllegalArgumentException.class, () -> service.createRecordForUser(invalidData2));
+    }
 }

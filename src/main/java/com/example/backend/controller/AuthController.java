@@ -10,6 +10,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class AuthController {
@@ -21,7 +23,7 @@ public class AuthController {
     @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
     public void register(@Valid @RequestBody RegisterRequest request) {
-        String userId = registrationService.register(request);
-        fertilityRecordService.createRecordForUser(userId);
+        List<String> userInfo = registrationService.register(request);
+        fertilityRecordService.createRecordForUser(userInfo);
     }
 }
