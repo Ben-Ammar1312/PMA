@@ -80,10 +80,7 @@ public class AIIntegrationService {
 
 
     protected File getDataFolder() {
-        File folder= new File("dataJson");
-        System.out.println("Folder absolute path: " + folder.getAbsolutePath());
-        System.out.println("Folder exists? " + folder.exists());
-        System.out.println("Folder is directory? " + folder.isDirectory());
+        File folder= new File("dataJson");;
         return folder;
     }
 }

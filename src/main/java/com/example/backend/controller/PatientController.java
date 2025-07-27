@@ -74,4 +74,12 @@ public class PatientController {
             }
         }
     }
+
+
+    @GetMapping("/me/{id}")
+    public FertilityRecord getPatientRecord(@PathVariable String id){
+        return fertilityRecordService.getFertilityRecord(id);
+    }
+
+
 }

@@ -1,6 +1,9 @@
 package com.example.backend.controller;
 
+import com.example.backend.model.FertilityRecord;
+import com.example.backend.repository.FertilityRecordRepository;
 import com.example.backend.service.AIIntegrationService;
+import com.example.backend.service.FertilityRecordService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,8 @@ import java.util.Map;
 public class AIController {
 
     private final AIIntegrationService aiIntegrationService;
+    private final FertilityRecordService fertilityRecordService;
+    private final FertilityRecordRepository fertilityRecordRepository;
 
 
     // Trigger AI summarization and save the summary to FertilityRecord
@@ -48,4 +53,5 @@ public class AIController {
             return ResponseEntity.notFound().build();
         }
     }
+
 }
