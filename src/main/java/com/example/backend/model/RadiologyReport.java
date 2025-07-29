@@ -29,5 +29,4 @@ public class RadiologyReport {
     private String modality;
     private String findings;
     private String conclusion;
-    private String fileId;
 }

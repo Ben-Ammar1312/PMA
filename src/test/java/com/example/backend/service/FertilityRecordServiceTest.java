@@ -107,14 +107,14 @@ class FertilityRecordServiceTest {
         FertilityRecord rec1 = new FertilityRecord();
         FertilityRecord rec2 = new FertilityRecord();
         List<FertilityRecord> all = List.of(rec1, rec2);
-        when(fertilityRecordRepository.findAll()).thenReturn(all);
+        when(fertilityRecordRepository.findAllByMalePartner_PersonalInfo_FirstNameIsNotNull()).thenReturn(all);
         List<FertilityRecord> result = service.getAllRecords();
         assertEquals(all, result);
     }
 
     @Test
     void createRecordForUser_savesRecordWithId() {
-        service.createRecordForUser("user-1");
+        service.createRecordForUser(List.of("user-1","first","last","mail-1"));
         verify(fertilityRecordRepository).save(argThat(rec -> "user-1".equals(rec.getId())));
     }
 

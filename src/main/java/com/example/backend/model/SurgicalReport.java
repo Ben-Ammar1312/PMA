@@ -29,5 +29,4 @@ public class SurgicalReport {
     private String indication;
     private String findings;
     private String postOpPlan;
-    private String fileId;
 }
