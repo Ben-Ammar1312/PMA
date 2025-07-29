@@ -32,5 +32,4 @@ public class HemostasisPanel {
     private java.math.BigDecimal dahlbackFactor;
     private java.math.BigDecimal proteinC;
     private java.math.BigDecimal proteinS;
-    private String fileId;
 }

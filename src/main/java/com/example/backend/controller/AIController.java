@@ -22,7 +22,6 @@ public class AIController {
     private final FertilityRecordRepository fertilityRecordRepository;
 
 
-    // Trigger AI summarization and save the summary to FertilityRecord
 
 
     @Operation(summary = "Generate patient summary and save in patient's record")

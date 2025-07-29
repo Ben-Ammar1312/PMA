@@ -54,6 +54,7 @@ public class PatientController {
 
         // 1) persist your record
         record.setId(jwt.getSubject());
+        record.setSubmitted(true);
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
         String patientId = saved.getId();
 
@@ -79,6 +80,7 @@ public class PatientController {
                 }
             }
         }
+
 
     
 

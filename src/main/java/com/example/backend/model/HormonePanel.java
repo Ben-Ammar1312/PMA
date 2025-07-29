@@ -43,5 +43,4 @@ public class HormonePanel {
     private Double prolactin;
     private Double testosterone;
     private Double tsh;
-    private String fileId; // GridFS id
 }
