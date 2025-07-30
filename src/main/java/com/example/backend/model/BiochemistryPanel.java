@@ -28,7 +28,6 @@ public class BiochemistryPanel {
     @Indexed
     private LocalDate date;
 
-    private String fileId;
     private String lab;
 
     private Map<String, Double> parameters;

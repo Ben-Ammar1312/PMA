@@ -1,10 +1,17 @@
 package com.example.backend.service;
+
+import com.example.backend.exception.AIServiceException;
+import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.repository.FertilityRecordRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.*;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
@@ -12,199 +19,133 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
+class AIIntegrationServiceTest {
 
-public class AIIntegrationServiceTest {
+    @Mock FertilityRecordRepository repo;
+    @Mock RestTemplate restTemplate;
 
-    @Mock
-    FertilityRecordRepository fertilityRecordRepository;
-
-    @Mock
-    RestTemplate restTemplate;
-
-    @InjectMocks
-    AIIntegrationService aiIntegrationService;
+    // helper to build a service with injected deps and a fixed path
+    private AIIntegrationService svcWithPath(String fixedPath) {
+        AIIntegrationService s = new AIIntegrationService(repo) {
+            @Override public String findPatientFilePath(String id) { return fixedPath; }
+            @Override protected File getDataFolder() { return new File("unused"); }
+        };
+        ReflectionTestUtils.setField(s, "restTemplate", restTemplate);
+        ReflectionTestUtils.setField(s, "FAST_API_URL", "http://fake/api");
+        return s;
+    }
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    void silence() {
+        // nothing – no spies, no manual reflection here
+    }
 
-        // Override getDataFolder() to avoid file system dependency in test
-        aiIntegrationService = new AIIntegrationService(fertilityRecordRepository) {
-            @Override
-            protected File getDataFolder() {
-                return new File("src/test/resources/dataJson"); // or any dummy folder you create for tests
-            }
-        };
+    /* -------- generateSummary -------- */
 
-        // Inject the mocked RestTemplate manually since the service initializes it internally
-        // We can use reflection or better to add a constructor or setter to inject RestTemplate in real code
-        // For this test, let's mock aiIntegrationService.restTemplate field:
-        try {
-            java.lang.reflect.Field restTemplateField = AIIntegrationService.class.getDeclaredField("restTemplate");
-            restTemplateField.setAccessible(true);
-            restTemplateField.set(aiIntegrationService, restTemplate);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    @Test
+    void generateSummary_success() {
+        AIIntegrationService s = svcWithPath("dummy.json");
+
+        when(restTemplate.postForEntity(eq("http://fake/api"), any(HttpEntity.class), eq(Map.class)))
+                .thenReturn(new ResponseEntity<>(Map.of("Overall Summary", "ok"), HttpStatus.OK));
+
+        FertilityRecord rec = new FertilityRecord();
+        when(repo.findById("p1")).thenReturn(Optional.of(rec));
+
+        Map<String, Object> out = s.generateSummary("p1");
+
+        assertEquals("ok", out.get("Overall Summary"));
+        assertEquals("ok", rec.getSummary());
+        verify(repo).save(rec);
     }
 
     @Test
-    void testGenerateSummary_FileNotFound() {
-        String patientId = "nonexistent";
-
-        // No file for this patientId, so generateSummary should return error map
-        Map<String, Object> result = aiIntegrationService.generateSummary(patientId);
-        assertTrue(result.containsKey("error"));
-        assertEquals("Patient file not found for ID: " + patientId, result.get("error"));
-    }
-
-    @Test
-    void testGenerateSummary_SuccessfulSummary() {
-        String patientId = "existingPatient";
-
-        // Mock findPatientFilePath to return a dummy file path
-        AIIntegrationService spyService = spy(aiIntegrationService);
-        doReturn("dataJson/" + patientId + "-data.json").when(spyService).findPatientFilePath(patientId);
-
-        // Mock response from RestTemplate
-        Map<String, Object> fakeResponse = Map.of("Overall Summary", "This is a summary.");
-        ResponseEntity<Map> responseEntity = new ResponseEntity<>(fakeResponse, HttpStatus.OK);
-        when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class))).thenReturn(responseEntity);
-
-        // Mock fertilityRecordRepository findById
-        FertilityRecord record = new FertilityRecord();
-        when(fertilityRecordRepository.findById(patientId)).thenReturn(Optional.of(record));
-
-        Map<String, Object> result = spyService.generateSummary(patientId);
-
-        assertNotNull(result);
-        assertEquals("This is a summary.", result.get("Overall Summary"));
-
-        // Verify that the summary was set and saved
-        assertEquals("This is a summary.", record.getSummary());
-        verify(fertilityRecordRepository).save(record);
-    }
-
-    @Test
-    void testGenerateSummary_EmptyResponse() {
-        String patientId = "existingPatient";
-
-        AIIntegrationService spyService = spy(aiIntegrationService);
-        doReturn("dataJson/" + patientId + "-data.json").when(spyService).findPatientFilePath(patientId);
-
-        ResponseEntity<Map> emptyResponse = new ResponseEntity<>(null, HttpStatus.OK);
-        when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class))).thenReturn(emptyResponse);
-
-        Map<String, Object> result = spyService.generateSummary(patientId);
-        assertTrue(result.containsKey("error"));
-        assertEquals("Empty response from summarization service", result.get("error"));
-    }
-
-    @Test
-    void testGenerateSummary_RestTemplateThrowsException() {
-        String patientId = "existingPatient";
-
-        AIIntegrationService spyService = spy(aiIntegrationService);
-        doReturn("dataJson/" + patientId + "-data.json").when(spyService).findPatientFilePath(patientId);
+    void generateSummary_emptyResponse_throws() {
+        AIIntegrationService s = svcWithPath("dummy.json");
 
         when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
-                .thenThrow(new RuntimeException("Connection refused"));
+                .thenReturn(new ResponseEntity<>(null, HttpStatus.OK));
 
-        Map<String, Object> result = spyService.generateSummary(patientId);
-
-        assertTrue(result.containsKey("error"));
-        assertTrue(((String) result.get("error")).contains("Failed to generate summary"));
+        assertThrows(AIServiceException.class, () -> s.generateSummary("p2"));
     }
 
     @Test
-    public void testFindPatientFilePath_Found() {
-        String patientId = "519d83aa-9c3c-49a2-9399-41910040e496";
+    void generateSummary_restTemplateThrows_throws() {
+        AIIntegrationService s = svcWithPath("dummy.json");
 
-        File mockFolder = mock(File.class);
-        File mockFile = mock(File.class);
-        File[] mockFiles = new File[]{mockFile};
+        when(restTemplate.postForEntity(anyString(), any(HttpEntity.class), eq(Map.class)))
+                .thenThrow(new RestClientException("boom"));
 
-        when(mockFolder.listFiles()).thenReturn(mockFiles);
-        when(mockFile.isFile()).thenReturn(true);
-        when(mockFile.getName()).thenReturn(patientId + "-patient1.json");
-        when(mockFile.getAbsolutePath()).thenReturn("dataJson/" + patientId + "-patient1.json");
-
-        FertilityRecordRepository mockRepo = mock(FertilityRecordRepository.class);
-
-        AIIntegrationService service = new AIIntegrationService(mockRepo) {
-            @Override
-            protected File getDataFolder() {
-                return mockFolder;
-            }
-        };
-
-        String path = service.findPatientFilePath(patientId);
-
-        assertNotNull(path);
-        assertEquals("dataJson/" + patientId + "-patient1.json", path);
+        assertThrows(AIServiceException.class, () -> s.generateSummary("p3"));
     }
 
     @Test
-    public void testFindPatientFilePath_NotFound() {
-        String patientId = "notfound";
+    void generateSummary_fileNotFound_throws() {
+        // real behavior: just throw directly
+        AIIntegrationService s = new AIIntegrationService(repo);
+        ReflectionTestUtils.setField(s, "restTemplate", restTemplate);
+        ReflectionTestUtils.setField(s, "FAST_API_URL", "http://fake/api");
 
-        File mockFolder = mock(File.class);
-        File mockFile = mock(File.class);
-        File[] mockFiles = new File[]{mockFile};
+        assertThrows(ResourceNotFoundException.class, () -> s.generateSummary("does-not-exist"));
+    }
 
-        when(mockFolder.listFiles()).thenReturn(mockFiles);
-        when(mockFile.isFile()).thenReturn(true);
-        when(mockFile.getName()).thenReturn("some-other-patient.json");
+    /* -------- findPatientFilePath -------- */
 
-        FertilityRecordRepository mockRepo = mock(FertilityRecordRepository.class);
+    @Test
+    void findPatientFilePath_found() {
+        String id = "519d83aa-9c3c-49a2-9399-41910040e496";
+        File folder = mock(File.class);
+        File file = mock(File.class);
 
-        AIIntegrationService service = new AIIntegrationService(mockRepo) {
-            @Override
-            protected File getDataFolder() {
-                return mockFolder;
-            }
+        when(folder.listFiles()).thenReturn(new File[]{file});
+        when(file.isFile()).thenReturn(true);
+        when(file.getName()).thenReturn(id + "-patient1.json");
+
+
+        AIIntegrationService s = new AIIntegrationService(repo) {
+            @Override protected File getDataFolder() { return folder; }
         };
 
-        String path = service.findPatientFilePath(patientId);
-
-        assertNull(path);
+        String path = s.findPatientFilePath(id);
+        assertEquals("dataJson/" + id + "-patient1.json", path);
     }
 
     @Test
-    public void testFindPatientFilePath_EmptyFolder() {
-        String patientId = "anything";
+    void findPatientFilePath_notFound_throws() {
+        File folder = mock(File.class);
+        File file = mock(File.class);
+        when(folder.listFiles()).thenReturn(new File[]{file});
+        when(file.isFile()).thenReturn(true);
+        when(file.getName()).thenReturn("someone-else.json");
 
-        File mockFolder = mock(File.class);
-        when(mockFolder.listFiles()).thenReturn(new File[0]);
-
-        FertilityRecordRepository mockRepo = mock(FertilityRecordRepository.class);
-
-        AIIntegrationService service = new AIIntegrationService(mockRepo) {
-            @Override
-            protected File getDataFolder() {
-                return mockFolder;
-            }
+        AIIntegrationService s = new AIIntegrationService(repo) {
+            @Override protected File getDataFolder() { return folder; }
         };
 
-        String path = service.findPatientFilePath(patientId);
-
-        assertNull(path);
+        assertThrows(ResourceNotFoundException.class, () -> s.findPatientFilePath("notfound"));
     }
 
     @Test
-    public void testFindPatientFilePath_NullFolder() {
-        FertilityRecordRepository mockRepo = mock(FertilityRecordRepository.class);
+    void findPatientFilePath_emptyFolder_throws() {
+        File folder = mock(File.class);
+        when(folder.listFiles()).thenReturn(new File[0]);
 
-        AIIntegrationService service = new AIIntegrationService(mockRepo) {
-            @Override
-            protected File getDataFolder() {
-                return null;
-            }
+        AIIntegrationService s = new AIIntegrationService(repo) {
+            @Override protected File getDataFolder() { return folder; }
         };
 
-        String path = service.findPatientFilePath("test");
-        assertNull(path);
+        assertThrows(ResourceNotFoundException.class, () -> s.findPatientFilePath("any"));
+    }
+
+    @Test
+    void findPatientFilePath_nullFolder_throws() {
+        AIIntegrationService s = new AIIntegrationService(repo) {
+            @Override protected File getDataFolder() { return null; }
+        };
+        assertThrows(ResourceNotFoundException.class, () -> s.findPatientFilePath("test"));
     }
 }

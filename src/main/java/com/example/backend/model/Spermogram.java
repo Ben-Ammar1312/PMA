@@ -53,5 +53,4 @@ public class Spermogram {
     private java.util.Map<String, Object> casa;
     private java.util.Map<String, Object> morphologyBreakdown;
     private SpermCulture spermCulture;
-    private String fileId; // GridFS id
 }

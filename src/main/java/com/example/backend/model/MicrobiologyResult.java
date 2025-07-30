@@ -38,7 +38,6 @@ public class MicrobiologyResult {
     private String testType;
     private String result;
     private String organism;
-    private String fileId; // GridFS id
 
     private Map<String, Object> details;
 }

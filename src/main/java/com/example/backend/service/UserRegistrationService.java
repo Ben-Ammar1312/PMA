@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.exception.UserRegistrationException;
 import com.example.backend.model.RegisterRequest;
 import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
@@ -40,16 +41,21 @@ public class UserRegistrationService {
         cred.setTemporary(false);
 
         user.setCredentials(List.of(cred));
-
+        try {
         Response resp = keycloak.realm(targetRealm)
                 .users()
                 .create(user);
 
         if (resp.getStatus() >= 400) {
-            throw new RuntimeException(
+            throw new UserRegistrationException(
                     "Failed to create user in realm '" + targetRealm +
                             "': HTTP " + resp.getStatus());
         }
+            // Ensure we have a Location header to extract the user identifier
+            if (resp.getLocation() == null) {
+                throw new UserRegistrationException(
+                        "Registration succeeded but response did not contain a Location header");
+            }
 
         // Extract user ID from response
         String userId = resp.getLocation().getPath()
@@ -76,5 +82,9 @@ public class UserRegistrationService {
                 .sendVerifyEmail();
 
         return List.of(userId, user.getFirstName(), user.getLastName(), user.getEmail());
+    }catch (UserRegistrationException ex) {
+        throw ex;
+    }catch (Exception e){
+        throw new UserRegistrationException("Unexpected error during user registration ",e);
     }
-}
+}}

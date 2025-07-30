@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.exception.FileStorageException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -9,6 +10,11 @@ import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @Service
 public class FileStorageService {
@@ -22,68 +28,119 @@ public class FileStorageService {
     }
 
     @PostConstruct
-    public void init() throws IOException {
-        Files.createDirectories(uploadRoot);
+    public void init() {
+        try {
+            Files.createDirectories(uploadRoot);
+        } catch (IOException e) {
+            throw new FileStorageException("Could not initialize upload root", e);
+        }
     }
+
 
     /**
-     * Store under uploadRoot/<patientCode>/<originalFilename>
+     * Store under uploadRoot/<patientId>_<date>/logicalName[_counter]_<date>.<ext>
      */
-    public Path store(MultipartFile file, String patientId, String logicalName,
-                      Integer counter ) throws IOException {
+
+    public Path store(MultipartFile file,
+                      String patientId,
+                      String logicalName,
+                      Integer counter) {
+
         String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
         if (originalFilename.contains("..")) {
-            throw new IOException("Invalid path sequence in file name: " + originalFilename);
+            throw new FileStorageException(
+                    "Invalid path sequence in file name: " + originalFilename);
         }
 
-        // Get current date formatted
-        String formattedDate = LocalDate.now().toString(); // e.g. 2025-07-16
+        Path patientDir = resolvePatientDir(patientId);
 
-        // Create subdirectory based on patientId + date
-        String subDirName = patientId + "_" + formattedDate;
-        Path patientDir = uploadRoot.resolve(subDirName);
-        Files.createDirectories(patientDir);
-
-        String extension  = "";
-        int dotIndex      = file.getOriginalFilename().lastIndexOf('.');
-        if (dotIndex != -1) {
-            extension = file.getOriginalFilename().substring(dotIndex); // includes the dot
+        // build filename
+        String ext = "";
+        int dot = originalFilename.lastIndexOf('.');
+        if (dot != -1) {
+            ext = originalFilename.substring(dot);
         }
+        StringBuilder name = new StringBuilder(logicalName);
+        if (counter != null) name.append('_').append(counter);
+        name.append('_').append(LocalDate.now())
+                .append(ext);
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(logicalName);
-        if (counter != null) sb.append('_')
-                .append(counter);
-        sb.append('_').append(formattedDate)
-                .append(extension);
 
-        Path target = patientDir.resolve(sb.toString());
-        Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-        return target;
+        Path target = patientDir.resolve(name.toString());
+
+        try (var in = file.getInputStream()) {
+            Files.copy(in, target, StandardCopyOption.REPLACE_EXISTING);
+            return target;
+        } catch (IOException e) {
+            throw new FileStorageException(
+                    "Failed to store file " + originalFilename + " for patient " + patientId, e);
+        }
     }
+
+
+
 
     /**
-     * Back-compat helper: keep the old signature so existing tests (and any
-     * other callers you forgot about) still compile.
-     * <p>
-     * Uses the original file’s base name as the logical name and no counter.
+     * Scan *all* patientId_<date> folders to find the highest
+     * logicalName{N} and return next index = max+1
      */
-    public Path store(MultipartFile file, String patientId) throws IOException {
-        String originalFilename = StringUtils.cleanPath(file.getOriginalFilename());
-        if (originalFilename.contains("..")) {
-            throw new IOException("Invalid path sequence in file name: " + originalFilename);
-        }
+    public int nextIndex(String patientId, String logicalName) {
+        Pattern p = Pattern.compile(Pattern.quote(logicalName) + "_(\\d+)_.*",
+                Pattern.CASE_INSENSITIVE);
 
-        // derive logicalName = base part of the original file name
-        String logicalName = originalFilename;
-        int dotIndex = originalFilename.lastIndexOf('.');
-        if (dotIndex != -1) {
-            logicalName = originalFilename.substring(0, dotIndex);
-        }
+        try (Stream<Path> dirs = Files.list(uploadRoot)) {
+            // only directories for this patientId_
+            Optional<Integer> max = dirs
+                    .filter(Files::isDirectory)
+                    .filter(d -> d.getFileName().toString().startsWith(patientId + "_"))
+                    .flatMap(dir -> {
+                        try {
+                            return Files.list(dir);
+                        } catch (IOException e) {
+                            return Stream.empty();
+                        }
+                    })
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .map(p::matcher)
+                    .filter(Matcher::matches)
+                    .map(m -> Integer.parseInt(m.group(1)))
+                    .max(Comparator.naturalOrder());
 
-        // delegate to the new method
-        return store(file, patientId, logicalName, null);
+            return max.orElse(0) + 1;
+
+        } catch (IOException e) {
+            throw new FileStorageException(
+                    "Could not list directories under " + uploadRoot, e);
+        }
     }
+    /**
+     * Find an existing patientId_<date> folder if present, otherwise
+     * create a new one for today.
+     */
+    private Path resolvePatientDir(String patientId) {
+        try (Stream<Path> dirs = Files.list(uploadRoot)) {
+            // pick the first matching existing folder
+            Optional<Path> existing = dirs
+                    .filter(Files::isDirectory)
+                    .filter(d -> d.getFileName().toString().startsWith(patientId + "_"))
+                    .findFirst();
+
+            if (existing.isPresent()) {
+                return existing.get();
+            }
+
+            // create new if none
+            Path fresh = uploadRoot.resolve(patientId + "_" + LocalDate.now());
+            Files.createDirectories(fresh);
+            return fresh;
+
+        } catch (IOException e) {
+            throw new FileStorageException(
+                    "Could not resolve or create directory for patient " + patientId, e);
+        }
+    }
+
 
 
 }
