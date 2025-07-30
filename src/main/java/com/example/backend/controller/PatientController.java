@@ -1,12 +1,16 @@
 package com.example.backend.controller;
+import com.example.backend.exception.FileStorageException;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
+import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import lombok.extern.slf4j.Slf4j;
+
 
 @Slf4j
 @RestController
@@ -30,8 +35,7 @@ public class PatientController {
             value    = "/record",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
-    @ResponseStatus(HttpStatus.CREATED)
-    public void submitRecord(
+    public ResponseEntity<Void> submitRecord(
             @AuthenticationPrincipal Jwt jwt,
 
             // your JSON payload
@@ -45,15 +49,18 @@ public class PatientController {
 
             // the array of “other” documents
             @RequestPart(value = "autreDocumentFiles",       required = false) MultipartFile[] autreDocumentFiles
-    ) throws IOException {
-        log.debug("autreDocumentFiles = {}",
-                autreDocumentFiles == null ? "null" : autreDocumentFiles.length);
+
+    ){
+
         // 1) persist your record
         record.setId(jwt.getSubject());
+        record.setSubmitted(true);
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
         String patientId = saved.getId();
 
         // 2) store each of the four single uploads if present
+
+
         if (bilanHormonalFile        != null) fileStorageService.store(bilanHormonalFile,        patientId,"bilanHormonal",null);
         if (echographiePelvienneFile != null) fileStorageService.store(echographiePelvienneFile, patientId,"echographiePelvienne",null);
         if (hsgFile                  != null) fileStorageService.store(hsgFile,                  patientId,"hsgFile",null);
@@ -73,5 +80,48 @@ public class PatientController {
                 }
             }
         }
-    }
+
+
+    
+
+
+
+
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
 }
+
+    @Operation(summary = "Upload complementary files for the authenticated user")
+    @PostMapping(
+            value    = "/complementary-files",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<Void> uploadComplementaryFiles(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestPart("files") MultipartFile[] files
+    ){
+        String patientId = jwt.getSubject();
+        if (files == null || files.length == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+
+        int start = fileStorageService.nextIndex(patientId, "complementaryFiles");
+        for (MultipartFile f : files) {
+            if (f != null && !f.isEmpty()) {
+                fileStorageService.store(f, patientId, "complementaryFiles", start++);
+            }
+        }
+
+
+    return ResponseEntity.status(HttpStatus.CREATED).build();
+
+
+
+
+}
+
+    @Operation(summary="get patient's partial record by id to check if record was fully submitted")
+    @GetMapping("/me/{id}")
+    public FertilityRecord getPatientRecord(@PathVariable String id){
+        return fertilityRecordService.getFertilityRecord(id);
+    }}
+

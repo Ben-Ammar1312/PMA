@@ -32,5 +32,4 @@ public class HematologyPanel {
     private Integer platelets10e3UL;
     private Double rbc10e6UL;
     private Integer wbcUL;
-    private String fileId;
 }

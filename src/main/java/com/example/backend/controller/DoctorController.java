@@ -4,6 +4,7 @@ import com.example.backend.model.FertilityRecord;
 import com.example.backend.model.FertilityRecordDetails;
 import com.example.backend.service.FertilityRecordService;
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,13 +12,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/doctor")
 public class DoctorController {
     final FertilityRecordService fertilityRecordService;
 
-    public DoctorController(FertilityRecordService fertilityRecordService) {
-        this.fertilityRecordService = fertilityRecordService;
-    }
 
     @Operation(summary = "List all patient fertility records")
     @GetMapping("/patients")

@@ -92,7 +92,7 @@ public class SecurityConfig {
 
                         // 2) signup
                         .requestMatchers(HttpMethod.POST, "/register").permitAll()
-                        .requestMatchers("/ai/**").hasRole("Doctor")
+                        .requestMatchers("/ai/**").permitAll()
 
 
                         // 3) doctor endpoints

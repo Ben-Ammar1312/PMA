@@ -28,5 +28,4 @@ public class Hysterosalpingography {
     @Indexed
     private LocalDate date;
     private String report;
-    private String fileId; // GridFS id
 }
