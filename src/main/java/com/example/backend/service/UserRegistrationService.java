@@ -44,51 +44,55 @@ public class UserRegistrationService {
         cred.setTemporary(false);
 
         user.setCredentials(List.of(cred));
+        log.info("=== KEYCLOAK CONFIG ===");
+        log.info("Server URL: {}", keycloak.getServerUrl());
+        log.info("Realm: {}", targetRealm);
         try {
-        Response resp = keycloak.realm(targetRealm)
-                .users()
-                .create(user);
+                Response resp = keycloak.realm(targetRealm)
+                        .users()
+                        .create(user);
 
-        if (resp.getStatus() >= 400) {
-            throw new UserRegistrationException(
-                    "Failed to create user in realm '" + targetRealm +
-                            "': HTTP " + resp.getStatus());
-        }
-            // Ensure we have a Location header to extract the user identifier
-            if (resp.getLocation() == null) {
+                if (resp.getStatus() >= 400) {
                 throw new UserRegistrationException(
-                        "Registration succeeded but response did not contain a Location header");
-            }
+                        "Failed to create user in realm '" + targetRealm +
+                                "': HTTP " + resp.getStatus());
+                }
+                // Ensure we have a Location header to extract the user identifier
+                if (resp.getLocation() == null) {
+                        throw new UserRegistrationException(
+                                "Registration succeeded but response did not contain a Location header");
+                }
 
-        // Extract user ID from response
-        String userId = resp.getLocation().getPath()
-                .substring(resp.getLocation().getPath().lastIndexOf('/') + 1);
+                // Extract user ID from response
+                String userId = resp.getLocation().getPath()
+                        .substring(resp.getLocation().getPath().lastIndexOf('/') + 1);
 
-        // ✅ 1. Get the 'patient' role from realm
-        RoleRepresentation patientRole = keycloak.realm(targetRealm)
-                .roles()
-                .get("Patient")
-                .toRepresentation();
+                // ✅ 1. Get the 'patient' role from realm
+                RoleRepresentation patientRole = keycloak.realm(targetRealm)
+                        .roles()
+                        .get("Patient")
+                        .toRepresentation();
 
-        // ✅ 2. Assign the role to the user
-        keycloak.realm(targetRealm)
-                .users()
-                .get(userId)
-                .roles()
-                .realmLevel()
-                .add(List.of(patientRole));
+                // ✅ 2. Assign the role to the user
+                keycloak.realm(targetRealm)
+                        .users()
+                        .get(userId)
+                        .roles()
+                        .realmLevel()
+                        .add(List.of(patientRole));
 
-        // ✅ 3. Optionally send verification email
-        keycloak.realm(targetRealm)
-                .users()
-                .get(userId)
-                .sendVerifyEmail();
+                // ✅ 3. Optionally send verification email
+                keycloak.realm(targetRealm)
+                        .users()
+                        .get(userId)
+                        .sendVerifyEmail();
 
-        return List.of(userId, user.getFirstName(), user.getLastName(), user.getEmail());
-    }catch (UserRegistrationException ex) {
-        throw ex;
-    }catch (Exception e){
-        log.error("Registration failed", e);
-        throw new UserRegistrationException("Unexpected error during user registration " + e.getMessage(),e);
-    }
-}}
+                return List.of(userId, user.getFirstName(), user.getLastName(), user.getEmail());
+        }catch (UserRegistrationException ex) {
+                log.error("Keycloak connection test failed", e);
+                throw ex;
+        }catch (Exception e){
+                log.error("Registration failed", e);
+                throw new UserRegistrationException("Unexpected error during user registration " + e.getMessage(),e);
+        }
+        }}
