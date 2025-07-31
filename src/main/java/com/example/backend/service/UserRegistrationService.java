@@ -44,9 +44,7 @@ public class UserRegistrationService {
         cred.setTemporary(false);
 
         user.setCredentials(List.of(cred));
-        log.info("=== KEYCLOAK CONFIG ===");
-        log.info("Server URL: {}", keycloak.getServerUrl());
-        log.info("Realm: {}", targetRealm);
+        
         try {
                 Response resp = keycloak.realm(targetRealm)
                         .users()
