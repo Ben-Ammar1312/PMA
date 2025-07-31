@@ -85,7 +85,7 @@ public class UserRegistrationService {
     }catch (UserRegistrationException ex) {
         throw ex;
     }catch (Exception e){
-        log.error("Registration failed", ex);
+        log.error("Registration failed", e);
         throw new UserRegistrationException("Unexpected error during user registration " + e.getMessage(),e);
     }
 }}
