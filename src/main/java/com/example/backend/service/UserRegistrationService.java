@@ -10,6 +10,8 @@ import org.keycloak.representations.idm.RoleRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -18,6 +20,7 @@ import java.util.List;
 public class UserRegistrationService {
 
     private final Keycloak keycloak;
+    private static final Logger log = LoggerFactory.getLogger(UserRegistrationService.class);
 
 
 
