@@ -13,7 +13,10 @@ import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,9 @@ public class UserRegistrationService {
         user.setEmailVerified(false);
         user.setRequiredActions(List.of("VERIFY_EMAIL"));
         user.setEnabled(true);
+        Map<String, List<String>> attrs = new HashMap<>();
+        attrs.put("submitted", Collections.singletonList("false"));
+        user.setAttributes(attrs);
 
         CredentialRepresentation cred = new CredentialRepresentation();
         cred.setType(CredentialRepresentation.PASSWORD);

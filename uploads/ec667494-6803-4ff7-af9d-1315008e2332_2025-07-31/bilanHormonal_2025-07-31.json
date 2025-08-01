@@ -1,0 +1,31 @@
+[{
+  "_id": {
+    "$oid": "686ef35b581a3e297856b440"
+  },
+  "recordId": {
+    "$oid": "686ef1f9581a3e297856b431"
+  },
+  "date": {
+    "$date": "2025-06-11T00:00:00.000Z"
+  },
+  "parameters": {
+    "proteinC": {
+      "$numberDecimal": "87"
+    },
+    "proteinS": {
+      "$numberDecimal": "84"
+    },
+    "antithrombinIII": {
+      "$numberDecimal": "104"
+    },
+    "apcResistanceRatio": {
+      "$numberDecimal": "2.33"
+    },
+    "dahlbackFactor": {
+      "$numberDecimal": "0.81"
+    }
+  },
+  "fileId": {
+    "$oid": "686ef1f9581a3e297856b432"
+  }
+}]

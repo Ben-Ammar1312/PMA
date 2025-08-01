@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.model.FertilityRecordDetails;
 import com.example.backend.service.FertilityRecordService;
+import com.example.backend.service.UserAuthService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -27,6 +28,8 @@ class DoctorControllerTest {
 
     @MockitoBean
     private FertilityRecordService fertilityRecordService;
+    @MockitoBean private UserAuthService userAuthService;
+
 
     @Test
     void getPatients_returns200AndDelegatesToService() throws Exception {

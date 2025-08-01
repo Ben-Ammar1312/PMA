@@ -85,6 +85,7 @@ public class FertilityRecordService {
                                 // you can set medicalHistory, lifestyle, fertility here as well if needed
                                 .build()
                 )
+
                 // you can set couple, malePartner, treatments, etc.
                 .build();
 
