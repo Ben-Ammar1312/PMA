@@ -88,7 +88,7 @@ public class UserRegistrationService {
                 return List.of(userId, user.getFirstName(), user.getLastName(), user.getEmail());
         }catch (UserRegistrationException e) {
                 log.error("Keycloak connection test failed", e);
-                throw ex;
+                throw e;
         }catch (Exception e){
                 log.error("Registration failed", e);
                 throw new UserRegistrationException("Unexpected error during user registration " + e.getMessage(),e);
