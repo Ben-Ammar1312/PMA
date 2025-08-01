@@ -1,11 +1,10 @@
 package com.example.backend.controller;
-import com.example.backend.exception.FileStorageException;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
+import com.example.backend.service.UserAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -16,8 +15,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
@@ -28,6 +25,7 @@ public class PatientController {
 
     private final FertilityRecordService fertilityRecordService;
     private final FileStorageService fileStorageService;
+    private final UserAuthService authService;
 
 
     @Operation(summary = "Submit or update the authenticated user's record")
@@ -54,9 +52,9 @@ public class PatientController {
 
         // 1) persist your record
         record.setId(jwt.getSubject());
-        record.setSubmitted(true);
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
         String patientId = saved.getId();
+        authService.markSubmitted(patientId);
 
         // 2) store each of the four single uploads if present
 
@@ -123,5 +121,6 @@ public class PatientController {
     @GetMapping("/me/{id}")
     public FertilityRecord getPatientRecord(@PathVariable String id){
         return fertilityRecordService.getFertilityRecord(id);
-    }}
+    }
+}
 
