@@ -86,7 +86,7 @@ public class UserRegistrationService {
                         .sendVerifyEmail();
 
                 return List.of(userId, user.getFirstName(), user.getLastName(), user.getEmail());
-        }catch (UserRegistrationException ex) {
+        }catch (UserRegistrationException e) {
                 log.error("Keycloak connection test failed", e);
                 throw ex;
         }catch (Exception e){
