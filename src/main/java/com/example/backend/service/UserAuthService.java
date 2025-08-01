@@ -34,6 +34,10 @@ public class UserAuthService {
     private final Keycloak keycloak;
 
     public AccessTokenResponse login(String username, String password) {
+        System.out.println("URL : " + url);
+        System.out.println("Login client : " + loginClient);
+        System.out.println("Client secret : " + clientSecret);
+        System.out.println("Target realm : " + targetRealm);
         try {
             Keycloak keycloak = KeycloakBuilder.builder()
                     .serverUrl(url) // Keycloak URL
