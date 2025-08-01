@@ -1,12 +1,10 @@
 package com.example.backend.controller;
-import com.example.backend.exception.FileStorageException;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
 import com.example.backend.service.UserAuthService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.core.Response;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,8 +15,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j

@@ -82,8 +82,6 @@ public class AIIntegrationService {
 
 
     protected File getDataFolder() {
-        File folder= new File("dataJson");;
-
-        return folder;
+        return new File("dataJson");
     }
 }
