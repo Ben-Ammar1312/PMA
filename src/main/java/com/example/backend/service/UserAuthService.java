@@ -21,6 +21,10 @@ public class UserAuthService {
     @Value("${keycloak.target-realm:PMA}")
     private String targetRealm;
 
+
+    @Value("${keycloak.server-url}")
+    private String url;
+
     @Value("${keycloak.login-client}")
     private String loginClient;
 
@@ -32,7 +36,7 @@ public class UserAuthService {
     public AccessTokenResponse login(String username, String password) {
         try {
             Keycloak keycloak = KeycloakBuilder.builder()
-                    .serverUrl("http://localhost:8080") // Keycloak URL
+                    .serverUrl(url) // Keycloak URL
                     .realm(targetRealm)
                     .clientId(loginClient)
                     .clientSecret(clientSecret)
