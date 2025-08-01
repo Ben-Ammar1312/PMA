@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
+import com.example.backend.service.UserAuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,9 @@ class PatientControllerTest {
 
     @MockitoBean private FertilityRecordService fertilityRecordService;
     @MockitoSpyBean private FileStorageService fileStorageService;
+
+    @MockitoBean private UserAuthService userAuthService;
+
 
     private final java.util.List<Path> createdFiles = new java.util.ArrayList<>();
 

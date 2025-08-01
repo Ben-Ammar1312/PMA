@@ -1,7 +1,6 @@
 package com.example.backend.controller;
 
-import com.example.backend.model.requests.LoginRequest;
-import com.example.backend.model.requests.LoginResponse;
+
 import com.example.backend.service.UserAuthService;
 import com.example.backend.service.UserRegistrationService;
 import com.example.backend.service.FertilityRecordService;
@@ -15,12 +14,12 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doThrow;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AuthController.class)
-@AutoConfigureMockMvc
+@AutoConfigureMockMvc(addFilters = false)
 class AuthControllerTest {
 
     @Autowired MockMvc mockMvc;
@@ -28,6 +27,8 @@ class AuthControllerTest {
     @MockitoBean private UserRegistrationService registrationService;
     @MockitoBean private FertilityRecordService fertilityRecordService;
     @MockitoBean private UserAuthService authService;
+
+
 
     @Test
     void login_success_returnsToken() throws Exception {
