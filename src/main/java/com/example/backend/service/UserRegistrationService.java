@@ -31,7 +31,7 @@ public class UserRegistrationService {
     private String targetRealm;      // where users go
 
     public List<String> register(RegisterRequest request) {
-
+        System.out.println("INSIDE : " + request.getEmail());
         UserRepresentation user = new UserRepresentation();
         user.setUsername(request.getEmail()); // use email as username
         user.setEmail(request.getEmail());

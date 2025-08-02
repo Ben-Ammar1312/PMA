@@ -34,6 +34,11 @@ public class AuthController {
         fertilityRecordService.createRecordForUser(userInfo);
     }
 
+    @GetMapping("/hello")
+    public String hello() {
+        return "Hello World";
+    }
+
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         try {
