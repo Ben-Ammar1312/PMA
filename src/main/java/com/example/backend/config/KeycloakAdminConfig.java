@@ -11,20 +11,19 @@ import org.springframework.context.annotation.Configuration;
 public class KeycloakAdminConfig {
 
     @Bean
-    public Keycloak keycloak(
+        public Keycloak keycloak(
             @Value("${keycloak.server-url}") String serverUrl,
             @Value("${keycloak.admin-realm}") String adminRealm,
             @Value("${keycloak.client-id}")   String clientId,
-            @Value("${keycloak.username}")    String username,
-            @Value("${keycloak.password}")    String password) {
+            @Value("${keycloak.client-secret}") String secret)
+            {
 
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
                 .realm(adminRealm)      // login realm
                 .clientId(clientId)
-                .username(username)
-                .password(password)
-                .grantType(OAuth2Constants.PASSWORD)
+                .clientSecret(secret)
+                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
                 .build();
     }
 }
