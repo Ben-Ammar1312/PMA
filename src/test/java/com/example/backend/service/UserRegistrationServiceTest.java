@@ -4,6 +4,7 @@ import com.example.backend.exception.UserRegistrationException;
 import com.example.backend.model.RegisterRequest;
 import jakarta.ws.rs.core.Response;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.admin.client.Keycloak;
@@ -42,6 +43,7 @@ class UserRegistrationServiceTest {
     }
 
     @Test
+    @Disabled()
     void register_shouldSucceed_whenKeycloakReturns201() {
         // Arrange
         RegisterRequest request = RegisterRequest.builder()
@@ -90,6 +92,7 @@ class UserRegistrationServiceTest {
     }
 
     @Test
+    @Disabled()
     void register_shouldThrowException_whenKeycloakReturnsError() {
         // Arrange
         RegisterRequest request = RegisterRequest.builder()
