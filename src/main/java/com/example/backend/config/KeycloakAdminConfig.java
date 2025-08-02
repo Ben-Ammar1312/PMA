@@ -20,10 +20,12 @@ public class KeycloakAdminConfig {
 
         return KeycloakBuilder.builder()
                 .serverUrl(serverUrl)
-                .realm(adminRealm)      // login realm
-                .clientId(clientId)
+                .realm("master")
+                .username("admin")// login realm
+                .password("admin")
+                .clientId("admin-cli")
                 .clientSecret(secret)
-                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+                .grantType(OAuth2Constants.PASSWORD)
                 .build();
     }
 }
