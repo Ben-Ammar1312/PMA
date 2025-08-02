@@ -2,7 +2,8 @@ package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
-import com.example.backend.service.UserAuthService;
+import com.example.backend.service.UserService;
+import com.example.backend.security.CustomUserDetails;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,7 +25,7 @@ public class PatientController {
 
     private final FertilityRecordService fertilityRecordService;
     private final FileStorageService fileStorageService;
-    private final UserAuthService authService;
+    private final UserService userService;
 
 
     @Operation(summary = "Submit or update the authenticated user's record")
@@ -34,7 +34,7 @@ public class PatientController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     public ResponseEntity<Void> submitRecord(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal CustomUserDetails user,
 
             // your JSON payload
             @RequestPart("record") @Valid FertilityRecord record,
@@ -51,10 +51,10 @@ public class PatientController {
     ){
 
         // 1) persist your record
-        record.setId(jwt.getSubject());
+        record.setId(user.getId());
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
         String patientId = saved.getId();
-        authService.markSubmitted(patientId);
+        userService.markSubmitted(patientId);
 
         // 2) store each of the four single uploads if present
 
@@ -96,10 +96,10 @@ public class PatientController {
     )
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> uploadComplementaryFiles(
-            @AuthenticationPrincipal Jwt jwt,
+            @AuthenticationPrincipal CustomUserDetails user,
             @RequestPart("files") MultipartFile[] files
     ){
-        String patientId = jwt.getSubject();
+        String patientId = user.getId();
         if (files == null || files.length == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 
         int start = fileStorageService.nextIndex(patientId, "complementaryFiles");

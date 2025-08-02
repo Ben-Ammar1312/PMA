@@ -3,7 +3,9 @@ package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
-import com.example.backend.service.UserAuthService;
+import com.example.backend.service.UserService;
+import com.example.backend.security.CustomUserDetails;
+import com.example.backend.model.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -17,16 +19,15 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
@@ -43,7 +44,7 @@ class PatientControllerTest {
     @MockitoBean private FertilityRecordService fertilityRecordService;
     @MockitoSpyBean private FileStorageService fileStorageService;
 
-    @MockitoBean private UserAuthService userAuthService;
+    @MockitoBean private UserService userService;
 
 
     private final java.util.List<Path> createdFiles = new java.util.ArrayList<>();
@@ -96,13 +97,20 @@ class PatientControllerTest {
                 "world".getBytes()
         );
 
+        User u = new User();
+        u.setId("dummyUser");
+        u.setEmail("dummy@example.com");
+        u.setPassword("pw");
+        u.setRoles(List.of("Patient"));
+        CustomUserDetails principal = new CustomUserDetails(u);
+
         mockMvc.perform(multipart("/patient/record")
                         .file(recordPart)
                         .file(file1)
                         .file(file2)
                         .with(req -> { req.setMethod("POST"); return req; })
                         .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .with(jwt().jwt(t -> t.claim("sub", "dummyUser")))
+                        .with(user(principal))
                 )
                 .andExpect(status().isCreated());
 
