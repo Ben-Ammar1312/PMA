@@ -28,7 +28,7 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(UserRegistrationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Map<String, String> handleKeycloak(UserRegistrationException ex) {
+    public Map<String, String> handleRegistration(UserRegistrationException ex) {
         return Map.of("error", ex.getMessage());
     }
 

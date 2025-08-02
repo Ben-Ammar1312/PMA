@@ -1,11 +1,11 @@
 package com.example.backend.controller;
 
 
+import com.example.backend.model.requests.LoginResponse;
 import com.example.backend.service.UserAuthService;
 import com.example.backend.service.UserRegistrationService;
 import com.example.backend.service.FertilityRecordService;
 import org.junit.jupiter.api.Test;
-import org.keycloak.representations.AccessTokenResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -32,12 +32,7 @@ class AuthControllerTest {
 
     @Test
     void login_success_returnsToken() throws Exception {
-        AccessTokenResponse token = new AccessTokenResponse();
-        token.setToken("tkn");
-        token.setExpiresIn(60);
-        token.setRefreshToken("rtk");
-        token.setRefreshExpiresIn(120);
-        token.setTokenType("Bearer");
+        LoginResponse token = new LoginResponse("tkn", 60L, "rtk", 120L, "Bearer");
 
         given(authService.login("alice", "secret")).willReturn(token);
 
