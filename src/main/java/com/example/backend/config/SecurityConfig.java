@@ -94,6 +94,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
                         .requestMatchers("/ai/**").hasRole("Doctor")
+                        .requestMatchers("/test/**").permitAll()
 
 
                         // 3) doctor endpoints
