@@ -2,95 +2,36 @@ package com.example.backend.service;
 
 import com.example.backend.exception.UserRegistrationException;
 import com.example.backend.model.RegisterRequest;
-import jakarta.ws.rs.core.Response;
+import com.example.backend.model.User;
+import com.example.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.keycloak.admin.client.Keycloak;
-import org.keycloak.representations.idm.CredentialRepresentation;
-import org.keycloak.representations.idm.RoleRepresentation;
-import org.keycloak.representations.idm.UserRepresentation;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class UserRegistrationService {
 
-    private final Keycloak keycloak;
-
-
-
-    @Value("${keycloak.target-realm:PMA}")
-    private String targetRealm;      // where users go
+    private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
 
     public List<String> register(RegisterRequest request) {
-
-        UserRepresentation user = new UserRepresentation();
-        user.setUsername(request.getEmail()); // use email as username
-        user.setEmail(request.getEmail());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmailVerified(false);
-        user.setRequiredActions(List.of("VERIFY_EMAIL"));
-        user.setEnabled(true);
-        Map<String, List<String>> attrs = new HashMap<>();
-        attrs.put("submitted", Collections.singletonList("false"));
-        user.setAttributes(attrs);
-
-        CredentialRepresentation cred = new CredentialRepresentation();
-        cred.setType(CredentialRepresentation.PASSWORD);
-        cred.setValue(request.getPassword());
-        cred.setTemporary(false);
-
-        user.setCredentials(List.of(cred));
-        try {
-        Response resp = keycloak.realm(targetRealm)
-                .users()
-                .create(user);
-
-        if (resp.getStatus() >= 400) {
-            throw new UserRegistrationException(
-                    "Failed to create user in realm '" + targetRealm +
-                            "': HTTP " + resp.getStatus());
+        if (repository.findByEmail(request.email()).isPresent()) {
+            throw new UserRegistrationException("Email already registered");
         }
-            // Ensure we have a Location header to extract the user identifier
-            if (resp.getLocation() == null) {
-                throw new UserRegistrationException(
-                        "Registration succeeded but response did not contain a Location header");
-            }
 
-        // Extract user ID from response
-        String userId = resp.getLocation().getPath()
-                .substring(resp.getLocation().getPath().lastIndexOf('/') + 1);
+        User user = new User();
+        user.setEmail(request.email());
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setRoles(List.of("Patient"));
+        user.setSubmitted(false);
 
-        // ✅ 1. Get the 'patient' role from realm
-        RoleRepresentation patientRole = keycloak.realm(targetRealm)
-                .roles()
-                .get("Patient")
-                .toRepresentation();
-
-        // ✅ 2. Assign the role to the user
-        keycloak.realm(targetRealm)
-                .users()
-                .get(userId)
-                .roles()
-                .realmLevel()
-                .add(List.of(patientRole));
-
-        // ✅ 3. Optionally send verification email
-        keycloak.realm(targetRealm)
-                .users()
-                .get(userId)
-                .sendVerifyEmail();
-
-        return List.of(userId, user.getFirstName(), user.getLastName(), user.getEmail());
-    }catch (UserRegistrationException ex) {
-        throw ex;
-    }catch (Exception e){
-        throw new UserRegistrationException("Unexpected error during user registration ",e);
+        User saved = repository.save(user);
+        return List.of(saved.getId(), saved.getFirstName(), saved.getLastName(), saved.getEmail());
     }
-}}
+}
+

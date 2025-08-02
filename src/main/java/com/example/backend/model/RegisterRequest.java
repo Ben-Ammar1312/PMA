@@ -2,23 +2,14 @@ package com.example.backend.model;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class RegisterRequest {
-    @Email
-    @NotBlank
-    private String email;
-    @NotBlank
-    private String lastName;
-    @NotBlank
-    private String firstName;
-    @NotBlank
-    private String password;
-}
+/**
+ * Request body for user registration.
+ */
+public record RegisterRequest(
+        @Email @NotBlank String email,
+        @NotBlank String lastName,
+        @NotBlank String firstName,
+        @NotBlank String password
+) {}
+
