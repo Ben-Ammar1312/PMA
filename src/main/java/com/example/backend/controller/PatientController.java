@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
+import com.example.backend.model.PersonalInfo;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
 import com.example.backend.service.UserAuthService;
@@ -51,18 +52,34 @@ public class PatientController {
     ){
 
         // 1) persist your record
-        record.setId(jwt.getSubject());
+        String userId = jwt.getSubject();
+        record.setId(userId);
+
+        // ✅ Get the existing record if it exists
+        FertilityRecord existingRecord = fertilityRecordService.getFertilityRecord(userId);
+
+        if (existingRecord != null && existingRecord.getFemalePartner() != null && existingRecord.getFemalePartner().getPersonalInfo() != null) {
+            // preserve name/email from existing record
+            record.getFemalePartner()
+                    .setPersonalInfo(
+                            PersonalInfo.builder()
+                                    .firstName(existingRecord.getFemalePartner().getPersonalInfo().getFirstName())
+                                    .lastName(existingRecord.getFemalePartner().getPersonalInfo().getLastName())
+                                    .email(existingRecord.getFemalePartner().getPersonalInfo().getEmail())
+                                    .build()
+                    );
+        }
+
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
-        String patientId = saved.getId();
-        authService.markSubmitted(patientId);
+        authService.markSubmitted(userId);
 
         // 2) store each of the four single uploads if present
 
 
-        if (bilanHormonalFile        != null) fileStorageService.store(bilanHormonalFile,        patientId,"bilanHormonal",null);
-        if (echographiePelvienneFile != null) fileStorageService.store(echographiePelvienneFile, patientId,"echographiePelvienne",null);
-        if (hsgFile                  != null) fileStorageService.store(hsgFile,                  patientId,"hsgFile",null);
-        if (spermogrammeFile         != null) fileStorageService.store(spermogrammeFile,         patientId,"spermogrammeFile",null);
+        if (bilanHormonalFile        != null) fileStorageService.store(bilanHormonalFile,        userId,"bilanHormonal",null);
+        if (echographiePelvienneFile != null) fileStorageService.store(echographiePelvienneFile, userId,"echographiePelvienne",null);
+        if (hsgFile                  != null) fileStorageService.store(hsgFile,                  userId,"hsgFile",null);
+        if (spermogrammeFile         != null) fileStorageService.store(spermogrammeFile,         userId,"spermogrammeFile",null);
 
         // “Other” documents ➜ logical name fixed, counter increments
         if (autreDocumentFiles != null) {
@@ -71,7 +88,7 @@ public class PatientController {
                 if (f != null && !f.isEmpty()) {          // ✅ guard
                     fileStorageService.store(
                             f,
-                            patientId,
+                            userId,
                             "autreDocument",
                             counter++                     // only increment when we actually stored something
                     );

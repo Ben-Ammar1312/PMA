@@ -1,6 +1,8 @@
 package com.example.backend.controller;
 
 import com.example.backend.model.FertilityRecord;
+import com.example.backend.model.Partner;
+import com.example.backend.model.PersonalInfo;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
 import com.example.backend.service.UserAuthService;
@@ -65,7 +67,24 @@ class PatientControllerTest {
 
     @Test
     void whenPostingRecordAndFiles_thenReturns201AndFilesOnDisk() throws Exception {
-        // stub DB call
+        // Mock an existing FertilityRecord with personal info
+        FertilityRecord existingRecord = FertilityRecord.builder()
+                .femalePartner(
+                        Partner.builder()
+                                .personalInfo(
+                                        PersonalInfo.builder()
+                                                .firstName("Jane")
+                                                .lastName("Doe")
+                                                .email("jane.doe@example.com")
+                                                .build()
+                                )
+                                .build()
+                )
+                .build();
+
+        given(fertilityRecordService.getFertilityRecord("dummyUser"))
+                .willReturn(existingRecord);
+
         given(fertilityRecordService.addFertilityRecord(any(FertilityRecord.class)))
                 .willAnswer(inv -> {
                     FertilityRecord rec = inv.getArgument(0);
@@ -73,7 +92,11 @@ class PatientControllerTest {
                     return rec;
                 });
 
-        FertilityRecord rec = new FertilityRecord();
+        // ✅ Ensure femalePartner is not null to avoid NPE
+        FertilityRecord rec = FertilityRecord.builder()
+                .femalePartner(new Partner())
+                .build();
+
         String json = mapper.writeValueAsString(rec);
 
         MockMultipartFile recordPart = new MockMultipartFile(
@@ -102,25 +125,22 @@ class PatientControllerTest {
                         .file(file2)
                         .with(req -> { req.setMethod("POST"); return req; })
                         .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .with(jwt().jwt(t -> t.claim("sub", "dummyUser")))
-                )
+                        .with(jwt().jwt(t -> t.claim("sub", "dummyUser"))))
                 .andExpect(status().isCreated());
 
-        // Construct expected directory path with today's date
         String today = java.time.LocalDate.now().toString();
         Path uploadDir = Paths.get("uploads/dummyUser_" + today);
 
-        // 1st file: autreDocument_1_…
         Path p1 = uploadDir.resolve("autreDocument_1_" + today + ".txt");
         createdFiles.add(p1);
         assertTrue(Files.exists(p1), "first autreDocument should exist");
         assertArrayEquals("hello".getBytes(), Files.readAllBytes(p1));
 
-// 2nd file: autreDocument_2_…
         Path p2 = uploadDir.resolve("autreDocument_2_" + today + ".txt");
         createdFiles.add(p2);
         assertTrue(Files.exists(p2), "second autreDocument should exist");
         assertArrayEquals("world".getBytes(), Files.readAllBytes(p2));
     }
+
 
 }
