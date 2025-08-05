@@ -34,11 +34,6 @@ public class AuthController {
         fertilityRecordService.createRecordForUser(userInfo);
     }
 
-    @GetMapping("/hello")
-    public String hello() {
-        return "Hello World";
-    }
-
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         try {
@@ -54,5 +49,12 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.status(401).build(); // unauthorized if wrong credentials
         }
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) {
+        String email = request.get("email");
+        registrationService.sendResetPasswordEmail(email);
+        return ResponseEntity.ok("Reset password email sent to: " + email);
     }
 }
