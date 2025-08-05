@@ -99,4 +99,30 @@ public class UserRegistrationService {
                 log.error("Registration failed", e);
                 throw new UserRegistrationException("Unexpected error during user registration " + e.getMessage(),e);
         }
-        }}
+        }
+
+
+    public void sendResetPasswordEmail(String email) {
+        try {
+            List<UserRepresentation> users = keycloak.realm(targetRealm)
+                    .users()
+                    .search(email);
+
+            if (users.isEmpty()) {
+                throw new UserRegistrationException("No user found with email: " + email);
+            }
+
+            UserRepresentation user = users.get(0);
+
+            keycloak.realm(targetRealm)
+                    .users()
+                    .get(user.getId())
+                    .executeActionsEmail(List.of("UPDATE_PASSWORD"));
+
+        } catch (Exception e) {
+            log.error("Failed to send password reset email", e);
+            throw new UserRegistrationException("Failed to send reset password email: " + e.getMessage(), e);
+        }
+    }
+
+}

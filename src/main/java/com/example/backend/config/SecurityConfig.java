@@ -93,6 +93,8 @@ public class SecurityConfig {
                         // 2) signup
                         .requestMatchers(HttpMethod.POST, "/register").permitAll()
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/forgot-password").permitAll()
+
                         .requestMatchers("/ai/**").hasRole("Doctor")
                         .requestMatchers("/test/**").permitAll()
 
