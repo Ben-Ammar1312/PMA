@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.model.Partner;
 import com.example.backend.model.PersonalInfo;
+import com.example.backend.service.AIIntegrationService;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
 import com.example.backend.service.UserAuthService;
@@ -44,7 +45,8 @@ class PatientControllerTest {
 
     @MockitoBean private FertilityRecordService fertilityRecordService;
     @MockitoSpyBean private FileStorageService fileStorageService;
-
+    @MockitoBean
+    private AIIntegrationService aiIntegrationService;
     @MockitoBean private UserAuthService userAuthService;
 
 

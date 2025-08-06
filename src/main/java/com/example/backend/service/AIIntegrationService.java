@@ -20,8 +20,10 @@ import java.util.Optional;
 public class AIIntegrationService {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    @Value("${FAST_API_URL}")
-    private  String FAST_API_URL;
+    @Value("${FAST_API_URL_SUMMARIZE}")
+    private  String FAST_API_URL_SUMMARIZE;
+    @Value("${FAST_API_URL_PROCESS}")
+    private  String FAST_API_URL_PROCESS;
     private final FertilityRecordRepository fertilityRecordRepository;
 
     public String findPatientFilePath(String patientId) {
@@ -55,7 +57,7 @@ public class AIIntegrationService {
 
         ResponseEntity<Map> resp;
         try {
-            resp = restTemplate.postForEntity(FAST_API_URL, entity, Map.class);
+            resp = restTemplate.postForEntity(FAST_API_URL_SUMMARIZE, entity, Map.class);
         } catch (RestClientException e) {
             throw new AIServiceException("Error calling summarization service", e);
         }
@@ -76,6 +78,31 @@ public class AIIntegrationService {
 
         return payload;
     }
+
+
+
+    public Map<String, Object> processAndIndex(String recordId, String patientPath) {
+        String url = FAST_API_URL_PROCESS ;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Build the JSON payload exactly as in your spec
+        Map<String, String> payload = Map.of(
+                "record_id",  recordId,
+                "patient_path", patientPath
+        );
+
+        HttpEntity<Map<String, String>> req = new HttpEntity<>(payload, headers);
+        ResponseEntity<Map> resp = restTemplate.postForEntity(url, req, Map.class);
+
+        if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
+            throw new AIServiceException(
+                    "Failed to process-and-index (status=" + resp.getStatusCode() + ")");
+        }
+        //noinspection unchecked
+        return (Map<String, Object>) resp.getBody();
+    }
+
 
 
 
