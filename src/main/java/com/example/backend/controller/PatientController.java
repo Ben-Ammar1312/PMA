@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 
@@ -100,8 +101,8 @@ public class PatientController {
         }
         try {
             // Adjust this to the actual folder/file-naming your FileStorageService uses
-            String patientPath = "uploads/" + userId;
-            Map<String, Object> result = aiIntegrationService.processAndIndex(userId, patientPath);
+            Path patientPath = fileStorageService.resolvePatientDir(userId);
+            Map<String, Object> result = aiIntegrationService.processAndIndex(userId,patientPath.toString());
             log.info("process-and-index response: {}", result);
         } catch (Exception e) {
             log.error("Error during OCR/indexing for user {}", userId, e);
