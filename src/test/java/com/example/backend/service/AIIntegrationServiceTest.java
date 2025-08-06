@@ -35,7 +35,7 @@ class AIIntegrationServiceTest {
             @Override protected File getDataFolder() { return new File("unused"); }
         };
         ReflectionTestUtils.setField(s, "restTemplate", restTemplate);
-        ReflectionTestUtils.setField(s, "FAST_API_URL", "http://fake/api");
+        ReflectionTestUtils.setField(s, "FAST_API_URL_SUMMARIZE", "http://fake/api");
         return s;
     }
 
@@ -88,7 +88,7 @@ class AIIntegrationServiceTest {
         // real behavior: just throw directly
         AIIntegrationService s = new AIIntegrationService(repo);
         ReflectionTestUtils.setField(s, "restTemplate", restTemplate);
-        ReflectionTestUtils.setField(s, "FAST_API_URL", "http://fake/api");
+        ReflectionTestUtils.setField(s, "FAST_API_URL_SUMMARIZE", "http://fake/api");
 
         assertThrows(ResourceNotFoundException.class, () -> s.generateSummary("does-not-exist"));
     }
