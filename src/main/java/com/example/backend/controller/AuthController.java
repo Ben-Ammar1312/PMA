@@ -34,6 +34,7 @@ public class AuthController {
         fertilityRecordService.createRecordForUser(userInfo);
     }
 
+    @Operation(summary = "Login to user account")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
         try {
@@ -51,6 +52,7 @@ public class AuthController {
         }
     }
 
+    @Operation(summary = "Reset user password")
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) {
         String email = request.get("email");
