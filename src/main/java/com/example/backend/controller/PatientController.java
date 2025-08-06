@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.model.PersonalInfo;
+import com.example.backend.service.AIIntegrationService;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
 import com.example.backend.service.UserAuthService;
@@ -16,6 +17,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Map;
 
 
 @Slf4j
@@ -27,6 +29,7 @@ public class PatientController {
     private final FertilityRecordService fertilityRecordService;
     private final FileStorageService fileStorageService;
     private final UserAuthService authService;
+    private final AIIntegrationService aiIntegrationService;
 
 
     @Operation(summary = "Submit or update the authenticated user's record")
@@ -95,14 +98,19 @@ public class PatientController {
                 }
             }
         }
-
-
-    
-
-
-
-
-
+        try {
+            // Adjust this to the actual folder/file-naming your FileStorageService uses
+            String patientPath = "uploads/" + userId;
+            Map<String, Object> result = aiIntegrationService.processAndIndex(userId, patientPath);
+            log.info("process-and-index response: {}", result);
+        } catch (Exception e) {
+            log.error("Error during OCR/indexing for user {}", userId, e);
+            // you can choose to:
+            //  - rethrow as a 500
+            //  - swallow and still return 201
+            //  - return a different status
+            throw new RuntimeException("Could not initiate OCR/indexing", e);
+        }
         return ResponseEntity.status(HttpStatus.CREATED).build();
 }
 
