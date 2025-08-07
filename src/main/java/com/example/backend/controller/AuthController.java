@@ -54,9 +54,10 @@ public class AuthController {
 
     @Operation(summary = "Reset user password")
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@RequestBody Map<String, String> request) {
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody Map<String, String> request) {
         String email = request.get("email");
         registrationService.sendResetPasswordEmail(email);
-        return ResponseEntity.ok("Reset password email sent to: " + email);
-    }
+        return ResponseEntity.ok(Map.of(
+                "message", "Reset password email sent to: " + email
+        ));    }
 }
