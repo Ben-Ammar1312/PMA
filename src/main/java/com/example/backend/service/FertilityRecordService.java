@@ -4,6 +4,7 @@ import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -48,14 +49,14 @@ public class FertilityRecordService {
         // ② Build the DTO
         return FertilityRecordDetails.builder()
                 .record(record)
-                .microbiologyResults     (microbiologyResultRepository     .findByRecordId(rid))
-                .hormonePanels           (hormonePanelRepository           .findByRecordId(rid))
-                .hysterosalpingographies (hysterosalpingographyRepository .findByRecordId(rid))
-                .pelvicUltrasounds       (pelvicUltrasoundRepository       .findByRecordId(rid))
-                .spermograms             (spermogramRepository             .findByRecordId(rid))
+                .microbiologyResults     (microbiologyResultRepository     .findByRecordIdOrderByDateDesc(rid))
+                .hormonePanels           (hormonePanelRepository           .findByRecordIdOrderByDateDesc(rid))
+                .hysterosalpingographies (hysterosalpingographyRepository .findByRecordIdOrderByDateDesc(rid))
+                .pelvicUltrasounds       (pelvicUltrasoundRepository       .findByRecordIdOrderByDateDesc(rid))
+                .spermograms             (spermogramRepository             .findByRecordIdOrderByDateDesc(rid))
                 .medicalAttachments      (medicalAttachmentRepository      .findByRecordId(rid))
-                .radiologyReports        (radiologyReportRepository         .findByRecordId(rid))
-                .surgicalReports         (surgicalReportRepository           .findByRecordId(rid))
+                .radiologyReports        (radiologyReportRepository         .findByRecordIdOrderByDateDesc(rid))
+                .surgicalReports         (surgicalReportRepository           .findByRecordIdOrderByDateDesc(rid))
                 .build();
     }
 
