@@ -9,7 +9,7 @@
     <title>${msg("emailVerifyTitle")} • ${realm.displayName!realm.name}</title>
 
     <!-- Tailwind + Geist bundle -->
-    <link rel="stylesheet" href="./resources/css/styles.css">
+    <link rel="stylesheet" href="${url.resourcesPath}/css/styles.css">
     <!-- Inter fallback -->
     <link rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap">
@@ -78,7 +78,7 @@
 
     <!-- logo -->
     <div class="flex justify-center -mt-2 mb-4">
-        <img src="./resources/img/logoSmallNoBg.png"
+        <img src="${url.resourcesPath}/img/logoSmallNoBg.png"
              alt="Company logo" width="220" height="100"/>
     </div>
 

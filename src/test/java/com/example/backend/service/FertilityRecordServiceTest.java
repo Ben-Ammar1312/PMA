@@ -80,14 +80,14 @@ class FertilityRecordServiceTest {
 
 
 
-        when(microbiologyResultRepository    .findByRecordId(nullable(String.class))).thenReturn(List.of(micro));
-        when(hormonePanelRepository          .findByRecordId(nullable(String.class))).thenReturn(List.of(horm));
-        when(hysterosalpingographyRepository .findByRecordId(nullable(String.class))).thenReturn(List.of(hyst));
-        when(pelvicUltrasoundRepository      .findByRecordId(nullable(String.class))).thenReturn(List.of(pelv));
-        when(spermogramRepository            .findByRecordId(nullable(String.class))).thenReturn(List.of(sper));
+        when(microbiologyResultRepository    .findByRecordIdOrderByDateDesc(nullable(String.class))).thenReturn(List.of(micro));
+        when(hormonePanelRepository          .findByRecordIdOrderByDateDesc(nullable(String.class))).thenReturn(List.of(horm));
+        when(hysterosalpingographyRepository .findByRecordIdOrderByDateDesc(nullable(String.class))).thenReturn(List.of(hyst));
+        when(pelvicUltrasoundRepository      .findByRecordIdOrderByDateDesc(nullable(String.class))).thenReturn(List.of(pelv));
+        when(spermogramRepository            .findByRecordIdOrderByDateDesc(nullable(String.class))).thenReturn(List.of(sper));
         when(medicalAttachmentRepository     .findByRecordId(nullable(String.class))).thenReturn(List.of(att));
-        when(radiologyReportRepository     .findByRecordId(nullable(String.class))).thenReturn(List.of(radio));
-        when( surgicalReportRepository    .findByRecordId(nullable(String.class))).thenReturn(List.of(surg));
+        when(radiologyReportRepository     .findByRecordIdOrderByDateDesc(nullable(String.class))).thenReturn(List.of(radio));
+        when( surgicalReportRepository    .findByRecordIdOrderByDateDesc(nullable(String.class))).thenReturn(List.of(surg));
 
         FertilityRecordDetails details = service.getFullFertilityRecord("rid");
 
