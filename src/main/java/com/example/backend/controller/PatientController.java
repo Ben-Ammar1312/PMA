@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.nio.file.Path;
 import java.util.Map;
 
 
@@ -48,8 +49,6 @@ public class PatientController {
             @RequestPart(value = "echographiePelvienneFile", required = false) MultipartFile echographiePelvienneFile,
             @RequestPart(value = "hsgFile",                  required = false) MultipartFile hsgFile,
             @RequestPart(value = "spermogrammeFile",         required = false) MultipartFile spermogrammeFile,
-
-            // the array of “other” documents
             @RequestPart(value = "autreDocumentFiles",       required = false) MultipartFile[] autreDocumentFiles
 
     ){
@@ -72,7 +71,6 @@ public class PatientController {
                                     .build()
                     );
         }
-
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
         authService.markSubmitted(userId);
 
@@ -100,8 +98,8 @@ public class PatientController {
         }
         try {
             // Adjust this to the actual folder/file-naming your FileStorageService uses
-            String patientPath = "uploads/" + userId;
-            Map<String, Object> result = aiIntegrationService.processAndIndex(userId, patientPath);
+            Path patientPath = fileStorageService.resolvePatientDir(userId);
+            Map<String, Object> result = aiIntegrationService.processAndIndex(userId,"/app/"+patientPath.toString());
             log.info("process-and-index response: {}", result);
         } catch (Exception e) {
             log.error("Error during OCR/indexing for user {}", userId, e);
@@ -133,13 +131,7 @@ public class PatientController {
                 fileStorageService.store(f, patientId, "complementaryFiles", start++);
             }
         }
-
-
     return ResponseEntity.status(HttpStatus.CREATED).build();
-
-
-
-
 }
 
     @Operation(summary="get patient's partial record by id to check if record was fully submitted")

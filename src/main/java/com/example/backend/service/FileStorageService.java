@@ -118,7 +118,7 @@ public class FileStorageService {
      * Find an existing patientId_<date> folder if present, otherwise
      * create a new one for today.
      */
-    private Path resolvePatientDir(String patientId) {
+    public Path resolvePatientDir(String patientId) {
         try (Stream<Path> dirs = Files.list(uploadRoot)) {
             // pick the first matching existing folder
             Optional<Path> existing = dirs
