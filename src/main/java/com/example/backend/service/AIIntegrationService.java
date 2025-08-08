@@ -6,6 +6,8 @@ import com.example.backend.model.requests.JsonPathRequest;
 import com.example.backend.model.requests.SummaryResponse;
 import com.example.backend.repository.FertilityRecordRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,8 @@ public class AIIntegrationService {
     @Value("${FAST_API_URL_PROCESS}")
     private  String FAST_API_URL_PROCESS;
     private final FertilityRecordRepository fertilityRecordRepository;
+    private static final Logger log = LoggerFactory.getLogger(AIIntegrationService.class);
+
 
     public String findPatientFilePath(String patientId) {
         File folder = getDataFolder();
@@ -41,6 +45,7 @@ public class AIIntegrationService {
                     && file.getName().startsWith(patientId)
                     && file.getName().endsWith(".json")) {
                 // Return relative path, as expected by the FastAPI server
+                log.info("/app/dataJson/" + file.getName());
                 return "/app/dataJson/" + file.getName();
             }
         }
