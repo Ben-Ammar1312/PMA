@@ -41,7 +41,7 @@ public class AIIntegrationService {
                     && file.getName().startsWith(patientId + "-")
                     && file.getName().endsWith(".json")) {
                 // Return relative path, as expected by the FastAPI server
-                return "dataJson/" + file.getName();
+                return "/app/dataJson/" + file.getName();
             }
         }
         throw new ResourceNotFoundException("Patient's files not found");
@@ -127,6 +127,7 @@ public class AIIntegrationService {
 
 
     protected File getDataFolder() {
-        return new File("dataJson");
+        return new File("/app/dataJson");
     }
+
 }
