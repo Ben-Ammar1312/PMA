@@ -99,7 +99,7 @@ public class PatientController {
         try {
             // Adjust this to the actual folder/file-naming your FileStorageService uses
             Path patientPath = fileStorageService.resolvePatientDir(userId);
-            Map<String, Object> result = aiIntegrationService.processAndIndex(userId,"/app/"+patientPath.toString());
+            Map<String, Object> result = aiIntegrationService.processAndIndex(userId,patientPath.toString());
             log.info("process-and-index response: {}", result);
         } catch (Exception e) {
             log.error("Error during OCR/indexing for user {}", userId, e);
