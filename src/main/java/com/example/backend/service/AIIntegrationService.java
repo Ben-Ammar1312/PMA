@@ -38,7 +38,7 @@ public class AIIntegrationService {
 
         for (File file : files) {
             if (file.isFile()
-                    && file.getName().startsWith(patientId + "-")
+                    && file.getName().startsWith(patientId)
                     && file.getName().endsWith(".json")) {
                 // Return relative path, as expected by the FastAPI server
                 return "/app/dataJson/" + file.getName();
