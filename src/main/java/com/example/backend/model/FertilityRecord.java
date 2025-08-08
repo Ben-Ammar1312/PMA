@@ -21,7 +21,8 @@ public class FertilityRecord {
     private List<Treatment> treatments;
 
     /** short description filled by practitioners */
-    private String summary;
+    private String summary1Path;
+    private String summary2Path;
 
     private String priorPma;
     private List<String> priorTechniques;

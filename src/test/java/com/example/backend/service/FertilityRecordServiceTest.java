@@ -120,7 +120,7 @@ class FertilityRecordServiceTest {
 
     @Test
     void getSummary_returnsRecordSummary() {
-        FertilityRecord rec = FertilityRecord.builder().id("abc").summary("hello").build();
+        FertilityRecord rec = FertilityRecord.builder().id("abc").summary1Path("hello").build();
         when(fertilityRecordRepository.findById("abc")).thenReturn(Optional.of(rec));
         assertEquals("hello", service.getSummary("abc"));
     }

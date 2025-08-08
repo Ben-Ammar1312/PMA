@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.example.backend.exception.AIServiceException;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.FertilityRecord;
+import com.example.backend.model.requests.SummaryResponse;
 import com.example.backend.repository.FertilityRecordRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,10 +57,9 @@ class AIIntegrationServiceTest {
         FertilityRecord rec = new FertilityRecord();
         when(repo.findById("p1")).thenReturn(Optional.of(rec));
 
-        Map<String, Object> out = s.generateSummary("p1");
+        SummaryResponse out = s.generateSummary("p1");
 
-        assertEquals("ok", out.get("Overall Summary"));
-        assertEquals("ok", rec.getSummary());
+        assertEquals("ok", rec.getSummary1Path());
         verify(repo).save(rec);
     }
 

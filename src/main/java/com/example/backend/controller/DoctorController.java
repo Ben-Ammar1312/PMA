@@ -3,8 +3,10 @@ package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.model.FertilityRecordDetails;
 import com.example.backend.service.FertilityRecordService;
+import com.fasterxml.jackson.databind.JsonNode;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,8 +35,8 @@ public class DoctorController {
 
     @Operation(summary = "Get a patient's summary")
     @GetMapping("/patient/{id}/summary")
-    public String getPatientSummary(@PathVariable String id) {
-        return fertilityRecordService.getSummary(id);
+    public ResponseEntity<JsonNode> getPatientSummary(@PathVariable String id) {
+        return fertilityRecordService.getSummaryFromFile(id);
     }
 
 

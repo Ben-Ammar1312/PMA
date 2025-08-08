@@ -11,4 +11,6 @@ public interface FertilityRecordRepository
 
     List<FertilityRecord> findAllByMalePartner_PersonalInfo_FirstNameIsNotNull();
 
+    FertilityRecord findFertilityRecordById(String id);
+
 }

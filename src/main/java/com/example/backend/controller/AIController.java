@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.model.FertilityRecord;
+import com.example.backend.model.requests.SummaryResponse;
 import com.example.backend.repository.FertilityRecordRepository;
 import com.example.backend.service.AIIntegrationService;
 import com.example.backend.service.FertilityRecordService;
@@ -24,11 +25,11 @@ public class AIController {
 
 
 
-    @Operation(summary = "Generate patient summary and save in patient's record")
+    @Operation(summary = "Generate patient summaries and save paths in patient's record")
     @PostMapping("/summarize/{patientId}")
-    public ResponseEntity<Map<String, Object>> summarizeAndSave(@PathVariable String patientId) {
-            Map<String, Object> summary = aiIntegrationService.generateSummary(patientId);
-            return ResponseEntity.ok(summary);
+    public ResponseEntity<SummaryResponse> summarizeAndSave(@PathVariable String patientId) {
+        SummaryResponse summary = aiIntegrationService.generateSummary(patientId);
+        return ResponseEntity.ok(summary);
     }
 
     @Operation(summary = "Find patient json file path")

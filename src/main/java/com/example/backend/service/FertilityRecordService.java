@@ -3,11 +3,21 @@ package com.example.backend.service;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.*;
 import com.example.backend.repository.*;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.core.util.Json;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +31,8 @@ public class FertilityRecordService {
     final MedicalAttachmentRepository medicalAttachmentRepository;
     final RadiologyReportRepository radiologyReportRepository;
     final SurgicalReportRepository surgicalReportRepository;
+    private static final Logger log = LoggerFactory.getLogger(FertilityRecordService.class);
+
 
 
     public FertilityRecord addFertilityRecord(FertilityRecord fertilityRecord) {
@@ -33,7 +45,7 @@ public class FertilityRecordService {
     }
 
     public String getSummary(String id){
-        return getFertilityRecord(id).getSummary();
+        return getFertilityRecord(id).getSummary1Path();
     }
 
     /**
@@ -101,5 +113,36 @@ public class FertilityRecordService {
 
         return fertilityRecordRepository.findAllByMalePartner_PersonalInfo_FirstNameIsNotNull();
     }
+
+    public ResponseEntity<JsonNode> getSummaryFromFile(String recordId) {
+        FertilityRecord fertilityRecord = fertilityRecordRepository.findFertilityRecordById(recordId);
+        log.info("Record: {}", fertilityRecord);
+        if (fertilityRecord == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        String filePath = fertilityRecord.getSummary1Path();
+        log.info("Summary path: {}", filePath);
+        if (filePath == null || filePath.isBlank()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        }
+
+        File jsonFile = new File(filePath);
+        if (!jsonFile.exists()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
+        }
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonContent = objectMapper.readTree(jsonFile);
+            return ResponseEntity.ok(jsonContent);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
 
 }
