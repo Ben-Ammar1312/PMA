@@ -47,21 +47,39 @@ class AIIntegrationServiceTest {
 
     /* -------- generateSummary -------- */
 
+
     @Test
     void generateSummary_success() {
         AIIntegrationService s = svcWithPath("dummy.json");
 
+        Map<String, String> filesMap = Map.of(
+                "summary1_path", "path/to/summary1",
+                "summary2_path", "path/to/summary2"
+        );
+        Map<String, Object> summariesMap = Map.of(
+                "summary1", "Summary 1 content",
+                "summary2", "Summary 2 content"
+        );
+
+        Map<String, Object> responseBody = Map.of(
+                "message", "ok",
+                "status", "success",
+                "files", filesMap,
+                "summaries", summariesMap
+        );
+
         when(restTemplate.postForEntity(eq("http://fake/api"), any(HttpEntity.class), eq(Map.class)))
-                .thenReturn(new ResponseEntity<>(Map.of("Overall Summary", "ok"), HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(responseBody, HttpStatus.OK));
 
         FertilityRecord rec = new FertilityRecord();
         when(repo.findById("p1")).thenReturn(Optional.of(rec));
 
         SummaryResponse out = s.generateSummary("p1");
 
-        assertEquals("ok", rec.getSummary1Path());
+        assertEquals("path/to/summary1", rec.getSummary1Path());
         verify(repo).save(rec);
     }
+
 
     @Test
     void generateSummary_emptyResponse_throws() {
