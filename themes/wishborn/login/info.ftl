@@ -3,7 +3,7 @@
 <#setting boolean_format="c">
 
 <!DOCTYPE html>
-<html lang="${locale}"><#if direction??> dir="${direction}"</#if>
+<html lang="${locale}"<#if direction??> dir="${direction}"</#if>>
 <head>
     <meta charset="utf-8"/>
     <title>${message.summary} • ${realm.displayName!realm.name}</title>
@@ -35,17 +35,23 @@
                      focus:outline-none focus:ring-2 focus:ring-offset-2
                      focus:ring-indigo-500">
                 <!-- "translate" icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-languages-icon lucide-languages"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/>
+                    <path d="M2 5h12"/><path d="M7 2h1"/>
+                    <path d="m22 22-5-10-5 10"/><path d="M14 18h6"/>
+                </svg>
             </button>
 
             <ul id="kc-lang-menu"
                 class="hidden fade-enter absolute right-0 mt-2 w-40 origin-top-right bg-white
-           border border-gray-200 rounded-md shadow-lg z-50" style="background:#FFFFFF;">
+                       border border-gray-200 rounded-md shadow-lg z-50">
                 <#list locale.supported as l>
                     <li class="bg-white first:rounded-t-md last:rounded-b-md">
                         <a href="${l.url}"
                            class="block px-3 py-2 text-sm bg-white hover:bg-gray-100
-                      <#if l.languageTag == locale>font-semibold text-indigo-600</#if>">
+                                  <#if l.languageTag == locale>font-semibold text-indigo-600</#if>">
                             ${l.label}
                         </a>
                     </li>
@@ -92,7 +98,6 @@
     <!-- main message & any required actions -->
     <p class="text-[#4A4A4A] text-sm leading-6 text-center mb-4">
         ${message.summary}
-        <#-- list required actions, if any -->
         <#if requiredActions??>
             <#list requiredActions>
                 : <b><#items as reqActionItem>
@@ -103,7 +108,8 @@
     </p>
 
     <!-- navigation buttons / links -->
-    <#if !(skipLink??)>
+    <#if skipLink?? && skipLink>
+    <#else>
         <div class="flex flex-col gap-3 items-center">
             <#if pageRedirectUri?has_content>
                 <a href="${pageRedirectUri}"
@@ -125,16 +131,16 @@
                 </a>
             <#else>
                 <!-- Localized "Back to Login" -->
-                <a href="http://144.91.76.149:3000/auth/login"
+                <a href="${url.loginUrl}"
                    class="w-40 bg-gray-100 hover:bg-gray-200 text-[#465573]
                           font-semibold rounded-lg py-2 text-center transition-colors border border-gray-300">
                     ${kcSanitize(msg("loginBackToLogin"))?no_esc}
                 </a>
             </#if>
-
         </div>
     </#if>
 
 </div><!-- /wrapper -->
+
 </body>
 </html>
