@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.model.PersonalInfo;
+import com.example.backend.model.requests.SummaryResponse;
 import com.example.backend.service.AIIntegrationService;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
@@ -99,15 +100,18 @@ public class PatientController {
         try {
             // Adjust this to the actual folder/file-naming your FileStorageService uses
             Path patientPath = fileStorageService.resolvePatientDir(userId);
-            Map<String, Object> result = aiIntegrationService.processAndIndex(userId,patientPath.toString());
+
+            // 1️⃣ Process and index
+            Map<String, Object> result = aiIntegrationService.processAndIndex(userId, patientPath.toString());
             log.info("process-and-index response: {}", result);
+
+            // 2️⃣ Generate summaries and save them in DB
+            SummaryResponse summaryResponse = aiIntegrationService.generateSummary(userId);
+            log.info("Summary generation response: {}", summaryResponse);
+
         } catch (Exception e) {
-            log.error("Error during OCR/indexing for user {}", userId, e);
-            // you can choose to:
-            //  - rethrow as a 500
-            //  - swallow and still return 201
-            //  - return a different status
-            throw new RuntimeException("Could not initiate OCR/indexing", e);
+            log.error("Error during OCR/indexing or summarization for user {}", userId, e);
+            throw new RuntimeException("Could not complete OCR/indexing or summarization", e);
         }
         return ResponseEntity.status(HttpStatus.CREATED).build();
 }

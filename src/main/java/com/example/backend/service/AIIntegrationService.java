@@ -3,6 +3,7 @@ package com.example.backend.service;
 import com.example.backend.exception.AIServiceException;
 import com.example.backend.exception.ResourceNotFoundException;
 import com.example.backend.model.requests.JsonPathRequest;
+import com.example.backend.model.requests.SummaryResponse;
 import com.example.backend.repository.FertilityRecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -48,8 +49,8 @@ public class AIIntegrationService {
 
 
 
-    public Map<String, Object> generateSummary(String patientId) {
-        String filePath = findPatientFilePath(patientId); // now throws ResourceNotFoundException
+    public SummaryResponse generateSummary(String patientId) {
+        String filePath = findPatientFilePath(patientId); // throws if not found
         JsonPathRequest body = new JsonPathRequest(filePath);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -66,18 +67,35 @@ public class AIIntegrationService {
                 .map(ResponseEntity::getBody)
                 .orElseThrow(() -> new AIServiceException("Empty response from summarization service"));
 
-        Object overall = payload.get("Overall Summary");
-        if (!(overall instanceof String s)) {
-            throw new AIServiceException("Missing or invalid 'Overall Summary' field");
+        // Extract data
+        String message = (String) payload.get("message");
+        String status = (String) payload.get("status");
+
+        Map<String, String> filesMap = (Map<String, String>) payload.get("files");
+        if (filesMap == null) {
+            throw new AIServiceException("Missing 'files' in AI service response");
         }
 
-        fertilityRecordRepository.findById(patientId).ifPresent(r -> {
-            r.setSummary(s);
-            fertilityRecordRepository.save(r);
+        String summary1Path = filesMap.get("summary1_path");
+        String summary2Path = filesMap.get("summary2_path");
+
+        if (summary1Path == null || summary2Path == null) {
+            throw new AIServiceException("Missing summary file paths in AI service response");
+        }
+
+        Map<String, Object> summariesMap = (Map<String, Object>) payload.get("summaries");
+
+        // Save in DB
+        fertilityRecordRepository.findById(patientId).ifPresent(record -> {
+            record.setSummary1Path(summary1Path);
+            record.setSummary2Path(summary2Path);
+            fertilityRecordRepository.save(record);
         });
 
-        return payload;
+        return new SummaryResponse(message, filesMap, summariesMap, status);
     }
+
+
 
 
 
