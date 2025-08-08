@@ -129,7 +129,7 @@ class AIIntegrationServiceTest {
         };
 
         String path = s.findPatientFilePath(id);
-        assertEquals("dataJson/" + id + "-patient1.json", path);
+        assertEquals("/app/dataJson/" + id + "-patient1.json", path);
     }
 
     @Test
