@@ -65,6 +65,7 @@ public class AIIntegrationService {
         try {
             resp = restTemplate.postForEntity(FAST_API_URL_SUMMARIZE, entity, Map.class);
         } catch (RestClientException e) {
+            log.error("error during call to fastAPI {}", e.getMessage(), e);
             throw new AIServiceException("Error calling summarization service", e);
         }
 
