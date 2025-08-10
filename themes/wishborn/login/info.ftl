@@ -108,37 +108,35 @@
     </p>
 
     <!-- navigation buttons / links -->
-    <#if skipLink?? && skipLink>
-    <#else>
-        <div class="flex flex-col gap-3 items-center">
-            <#if pageRedirectUri?has_content>
-                <a href="${pageRedirectUri}"
-                   class="w-40 bg-[#6985C0] hover:bg-[#637498] text-white
-                          font-semibold rounded-lg py-2 text-center transition-colors">
-                    ${kcSanitize(msg("backToApplication"))?no_esc}
-                </a>
-            <#elseif actionUri?has_content>
-                <a href="${actionUri}"
-                   class="w-40 bg-[#6985C0] hover:bg-[#637498] text-white
-                          font-semibold rounded-lg py-2 text-center transition-colors">
-                    ${kcSanitize(msg("proceedWithAction"))?no_esc}
-                </a>
-            <#elseif (client.baseUrl)?has_content>
-                <a href="${client.baseUrl}"
-                   class="w-40 bg-[#6985C0] hover:bg-[#637498] text-white
-                          font-semibold rounded-lg py-2 text-center transition-colors">
-                    ${kcSanitize(msg("backToApplication"))?no_esc}
-                </a>
-            <#else>
-                <!-- Localized "Back to Login" -->
-                <a href="${url.loginUrl}"
-                   class="w-40 bg-gray-100 hover:bg-gray-200 text-[#465573]
-                          font-semibold rounded-lg py-2 text-center transition-colors border border-gray-300">
-                    ${kcSanitize(msg("loginBackToLogin"))?no_esc}
-                </a>
-            </#if>
-        </div>
-    </#if>
+    <div class="flex flex-col gap-3 items-center">
+
+        <#if pageRedirectUri?has_content>
+            <a href="${pageRedirectUri}"
+               class="w-40 bg-[#6985C0] hover:bg-[#637498] text-white
+                      font-semibold rounded-lg py-2 text-center transition-colors">
+                ${kcSanitize(msg("backToApplication"))?no_esc}
+            </a>
+        <#elseif actionUri?has_content>
+            <a href="${actionUri}"
+               class="w-40 bg-[#6985C0] hover:bg-[#637498] text-white
+                      font-semibold rounded-lg py-2 text-center transition-colors">
+                ${kcSanitize(msg("proceedWithAction"))?no_esc}
+            </a>
+        <#elseif (client.baseUrl)?has_content>
+            <a href="${client.baseUrl}"
+               class="w-40 bg-[#6985C0] hover:bg-[#637498] text-white
+                      font-semibold rounded-lg py-2 text-center transition-colors">
+                ${kcSanitize(msg("backToApplication"))?no_esc}
+            </a>
+        </#if>
+
+        <!-- Always visible Back to Login -->
+        <a href="144.91.76.149:3000/auth/login"
+           class="w-40 bg-gray-100 hover:bg-gray-200 text-[#465573]
+                  font-semibold rounded-lg py-2 text-center transition-colors border border-gray-300">
+            ${kcSanitize(msg("loginBackToLogin"))?no_esc}
+        </a>
+    </div>
 
 </div><!-- /wrapper -->
 
