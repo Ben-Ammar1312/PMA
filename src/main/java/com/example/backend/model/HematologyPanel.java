@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
-import java.time.LocalDate;
 
 @Document("hematology_panels")
 @TimeSeries(timeField = "date", metaField = "recordId")
@@ -25,11 +24,11 @@ public class HematologyPanel {
     private String recordId;
 
     @Indexed
-    private LocalDate date;
+    private String date;
 
-    private Double hematocritPct;
-    private Double hemoglobinGDl;
-    private Integer platelets10e3UL;
-    private Double rbc10e6UL;
-    private Integer wbcUL;
+    private String hematocritPct;
+    private String hemoglobinGDl;
+    private String platelets10e3UL;
+    private String rbc10e6UL;
+    private String wbcUL;
 }

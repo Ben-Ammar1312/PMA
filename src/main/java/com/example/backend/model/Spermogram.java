@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
-import java.time.LocalDate;
 
 /**
  * Spermogram results stored in their own collection so that the fertility
@@ -32,25 +31,25 @@ public class Spermogram {
 
     /** Date of the test. Indexed for range queries. */
     @Indexed
-    private LocalDate date;
+    private String date;
 
-    private Double ejaculateVolume;
-    private Double concentration;
-    private Double progressiveMotility;
-    private Double nonProgressiveMotility;
-    private Double normalMorphology;
-    private Double vitality;
-    private Integer abstinenceDays;
-    private Double immotile;
-    private Double leucocytes;
-    private Double ph;
-    private Double totalCount;
-    private Double roundCells;
+    private String ejaculateVolume;
+    private String concentration;
+    private String progressiveMotility;
+    private String nonProgressiveMotility;
+    private String normalMorphology;
+    private String vitality;
+    private String abstinenceDays;
+    private String immotile;
+    private String leucocytes;
+    private String ph;
+    private String totalCount;
+    private String roundCells;
     private String viscosity;
     private String remarks;
     private String fileCytogramId;
-    private Double multipleAnomalyIndex;
-    private java.util.Map<String, Object> casa;
-    private java.util.Map<String, Object> morphologyBreakdown;
+    private String multipleAnomalyIndex;
+    private java.util.Map<String, String> casa;
+    private java.util.Map<String, String> morphologyBreakdown;
     private SpermCulture spermCulture;
 }

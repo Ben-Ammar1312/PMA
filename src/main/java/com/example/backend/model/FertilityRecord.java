@@ -3,7 +3,6 @@ import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.Instant;
 import java.util.List;
 @Document("fertility_records")
 @Data
@@ -28,8 +27,8 @@ public class FertilityRecord {
     private List<String> priorTechniques;
     private String currentChildren;
     private String childrenFromOtherUnion;
-    private Instant created;
-    private Instant updated;
-    private Integer version;
+    private String created;
+    private String updated;
+    private String version;
 
 }

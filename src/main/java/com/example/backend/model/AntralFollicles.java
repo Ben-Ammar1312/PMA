@@ -3,8 +3,8 @@ import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Field;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class AntralFollicles {
-    private Integer rightOvary;
-    private Integer leftOvary;
+    private String rightOvary;
+    private String leftOvary;
     @Field("total")          // keep same JSON field
-    private Integer totalCount;
+    private String totalCount;
 }

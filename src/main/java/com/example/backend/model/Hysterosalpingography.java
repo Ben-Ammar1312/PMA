@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
-import java.time.LocalDate;
 
 @Document("hysterosalpingographies")
 @TimeSeries(timeField = "date", metaField = "recordId")
@@ -26,6 +25,6 @@ public class Hysterosalpingography {
     private String recordId;
 
     @Indexed
-    private LocalDate date;
+    private String date;
     private String report;
 }
