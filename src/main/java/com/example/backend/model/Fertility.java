@@ -4,8 +4,8 @@ import java.util.List;
 @Data @Builder @NoArgsConstructor @AllArgsConstructor
 public class Fertility {
 
-    private Boolean primaryInfertility;
-    private Integer infertilityDuration;  // months
+    private String primaryInfertility;
+    private String infertilityDuration;  // months
     private String intercourseFrequency;
 
     /** Previous pregnancies for that partner */
