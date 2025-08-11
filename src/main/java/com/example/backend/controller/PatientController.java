@@ -45,11 +45,11 @@ public class PatientController {
             // your JSON payload
             @RequestPart("record") @Valid FertilityRecord record,
 
-            // the four single files
-            @RequestPart(value = "bilanHormonalFile",        required = false) MultipartFile bilanHormonalFile,
-            @RequestPart(value = "echographiePelvienneFile", required = false) MultipartFile echographiePelvienneFile,
-            @RequestPart(value = "hsgFile",                  required = false) MultipartFile hsgFile,
-            @RequestPart(value = "spermogrammeFile",         required = false) MultipartFile spermogrammeFile,
+            // all file inputs are now arrays
+            @RequestPart(value = "bilanHormonalFiles",        required = false) MultipartFile[] bilanHormonalFiles,
+            @RequestPart(value = "echographiePelvienneFiles", required = false) MultipartFile[] echographiePelvienneFiles,
+            @RequestPart(value = "hsgFiles",                  required = false) MultipartFile[] hsgFiles,
+            @RequestPart(value = "spermogrammeFiles",         required = false) MultipartFile[] spermogrammeFiles,
             @RequestPart(value = "autreDocumentFiles",       required = false) MultipartFile[] autreDocumentFiles
 
     ){
@@ -75,15 +75,44 @@ public class PatientController {
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
         authService.markSubmitted(userId);
 
-        // 2) store each of the four single uploads if present
+        // 2) store each array of uploads if present
 
+        if (bilanHormonalFiles != null) {
+            int counter = 1;
+            for (MultipartFile f : bilanHormonalFiles) {
+                if (f != null && !f.isEmpty()) {
+                    fileStorageService.store(f, userId, "bilanHormonal", counter++);
+                }
+            }
+        }
 
-        if (bilanHormonalFile        != null) fileStorageService.store(bilanHormonalFile,        userId,"bilanHormonal",null);
-        if (echographiePelvienneFile != null) fileStorageService.store(echographiePelvienneFile, userId,"echographiePelvienne",null);
-        if (hsgFile                  != null) fileStorageService.store(hsgFile,                  userId,"hsgFile",null);
-        if (spermogrammeFile         != null) fileStorageService.store(spermogrammeFile,         userId,"spermogrammeFile",null);
+        if (echographiePelvienneFiles != null) {
+            int counter = 1;
+            for (MultipartFile f : echographiePelvienneFiles) {
+                if (f != null && !f.isEmpty()) {
+                    fileStorageService.store(f, userId, "echographiePelvienne", counter++);
+                }
+            }
+        }
 
-        // “Other” documents ➜ logical name fixed, counter increments
+        if (hsgFiles != null) {
+            int counter = 1;
+            for (MultipartFile f : hsgFiles) {
+                if (f != null && !f.isEmpty()) {
+                    fileStorageService.store(f, userId, "hsgFile", counter++);
+                }
+            }
+        }
+
+        if (spermogrammeFiles != null) {
+            int counter = 1;
+            for (MultipartFile f : spermogrammeFiles) {
+                if (f != null && !f.isEmpty()) {
+                    fileStorageService.store(f, userId, "spermogrammeFile", counter++);
+                }
+            }
+        }
+
         if (autreDocumentFiles != null) {
             int counter = 1;
             for (MultipartFile f : autreDocumentFiles) {

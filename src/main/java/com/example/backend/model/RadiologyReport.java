@@ -8,7 +8,6 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDate;
 
 @Document("radiology_reports")
 @Data
@@ -23,7 +22,7 @@ public class RadiologyReport {
     private String recordId;
 
     @Indexed
-    private LocalDate date;
+    private String date;
 
     private String bodyPart;
     private String modality;

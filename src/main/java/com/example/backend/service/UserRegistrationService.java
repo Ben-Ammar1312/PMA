@@ -31,12 +31,12 @@ public class UserRegistrationService {
     private String targetRealm;      // where users go
 
     public List<String> register(RegisterRequest request) {
-        System.out.println("INSIDE : " + request.getEmail());
+        System.out.println("INSIDE : " + request.email());
         UserRepresentation user = new UserRepresentation();
-        user.setUsername(request.getEmail()); // use email as username
-        user.setEmail(request.getEmail());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
+        user.setUsername(request.email()); // use email as username
+        user.setEmail(request.email());
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
         user.setEmailVerified(false);
         user.setRequiredActions(List.of("VERIFY_EMAIL"));
         user.setEnabled(true);
@@ -46,7 +46,7 @@ public class UserRegistrationService {
 
         CredentialRepresentation cred = new CredentialRepresentation();
         cred.setType(CredentialRepresentation.PASSWORD);
-        cred.setValue(request.getPassword());
+        cred.setValue(request.password());
         cred.setTemporary(false);
 
         user.setCredentials(List.of(cred));
