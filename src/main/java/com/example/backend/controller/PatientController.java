@@ -46,10 +46,10 @@ public class PatientController {
             @RequestPart("record") @Valid FertilityRecord record,
 
             // all file inputs are now arrays
-            @RequestPart(value = "bilanHormonalFiles",        required = false) MultipartFile[] bilanHormonalFiles,
-            @RequestPart(value = "echographiePelvienneFiles", required = false) MultipartFile[] echographiePelvienneFiles,
-            @RequestPart(value = "hsgFiles",                  required = false) MultipartFile[] hsgFiles,
-            @RequestPart(value = "spermogrammeFiles",         required = false) MultipartFile[] spermogrammeFiles,
+            @RequestPart(value = "bilanHormonalFile",        required = false) MultipartFile[] bilanHormonalFiles,
+            @RequestPart(value = "echographiePelvienneFile", required = false) MultipartFile[] echographiePelvienneFiles,
+            @RequestPart(value = "hsgFile",                  required = false) MultipartFile[] hsgFiles,
+            @RequestPart(value = "spermogrammeFile",         required = false) MultipartFile[] spermogrammeFiles,
             @RequestPart(value = "autreDocumentFiles",       required = false) MultipartFile[] autreDocumentFiles
 
     ){
