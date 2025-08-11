@@ -1,12 +1,10 @@
 package com.example.backend.model;
 
-import com.example.backend.model.enums.ProtocolType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Data
@@ -15,10 +13,10 @@ import java.util.List;
 @AllArgsConstructor
 public class Treatment {
 
-    private ProtocolType protocolType;
+    private String protocolType;
     private List<Medication> medications;
-    private LocalDate startDate;
-    private LocalDate endDate;
+    private String startDate;
+    private String endDate;
     private String cycleOutcome;
     private String comment;
 }

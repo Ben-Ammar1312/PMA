@@ -44,12 +44,12 @@ class UserRegistrationServiceTest {
     @Test
     void register_shouldSucceed_whenKeycloakReturns201() {
         // Arrange
-        RegisterRequest request = RegisterRequest.builder()
-                .email("test@example.com")
-                .firstName("John")
-                .lastName("Doe")
-                .password("pass123")
-                .build();
+        RegisterRequest request = new RegisterRequest(
+                "test@example.com",
+                "Doe",
+                "John",
+                "pass123"
+        );
 
         URI location = URI.create("http://keycloak/realms/PMA/users/123");
         RoleRepresentation patientRole = new RoleRepresentation("Patient", null, false);
@@ -92,12 +92,12 @@ class UserRegistrationServiceTest {
     @Test
     void register_shouldThrowException_whenKeycloakReturnsError() {
         // Arrange
-        RegisterRequest request = RegisterRequest.builder()
-                .email("fail@example.com")
-                .firstName("Jane")
-                .lastName("Smith")
-                .password("failpass")
-                .build();
+        RegisterRequest request = new RegisterRequest(
+                "fail@example.com",
+                "Smith",
+                "Jane",
+                "failpass"
+        );
 
         when(keycloak.realm("PMA")).thenReturn(realmResource);
         when(realmResource.users()).thenReturn(usersResource);

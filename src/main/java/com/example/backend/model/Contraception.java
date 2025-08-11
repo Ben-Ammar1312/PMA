@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDate;
 
 @Data
 @Builder
@@ -13,6 +12,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class Contraception {
     private String method;
-    private Integer yearsUsed;
-    private LocalDate stoppedDate;
+    private String yearsUsed;
+    private String stoppedDate;
 }
