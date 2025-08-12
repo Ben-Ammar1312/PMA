@@ -128,6 +128,9 @@
                       font-semibold rounded-lg py-2 text-center transition-colors">
                 ${kcSanitize(msg("backToApplication"))?no_esc}
             </a>
+
+        <#else>
+            <a href="http://144.91.76.149:3000/auth/login" class="btn">   ${kcSanitize(msg("backToApplication"))?no_esc} </a>
         </#if>
 
     </div>
