@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
+import java.time.Instant;
 import java.util.Map;
 
 @Document("biochemistry_panels")
@@ -25,9 +26,9 @@ public class BiochemistryPanel {
     private String recordId;
 
     @Indexed
-    private String date;
+    private Instant date;
 
     private String lab;
 
-    private Map<String, String> parameters;
+    private Map<String, Measurement> parameters;
 }

@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
+import java.time.Instant;
 
 /**
  * Hormone panel stored separately to keep fertility records compact.
@@ -29,17 +30,17 @@ public class HormonePanel {
 
     /** Date of the blood test. */
     @Indexed
-    private String date;
+    private Instant date;
 
-    private String fsh;
-    private String lh;
-    private String estradiol;
-    private String amh;
-    private String ft3;
-    private String ft4;
-    private String insulin;
-    private String progesterone;
-    private String prolactin;
-    private String testosterone;
-    private String tsh;
+    private Measurement fsh;
+    private Measurement lh;
+    private Measurement estradiol;
+    private Measurement amh;
+    private Measurement ft3;
+    private Measurement ft4;
+    private Measurement insulin;
+    private Measurement progesterone;
+    private Measurement prolactin;
+    private Measurement testosterone;
+    private Measurement tsh;
 }
