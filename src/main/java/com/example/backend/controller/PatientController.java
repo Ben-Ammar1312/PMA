@@ -1,6 +1,7 @@
 package com.example.backend.controller;
 import com.example.backend.model.FertilityRecord;
 import com.example.backend.model.PersonalInfo;
+import com.example.backend.model.Partner;
 import com.example.backend.model.requests.SummaryResponse;
 import com.example.backend.service.AIIntegrationService;
 import com.example.backend.service.FertilityRecordService;
@@ -58,19 +59,16 @@ public class PatientController {
         String userId = jwt.getSubject();
         record.setId(userId);
 
-        // ✅ Get the existing record if it exists
+        // ✅ Get the existing record if it exists and merge female partner info
         FertilityRecord existingRecord = fertilityRecordService.getFertilityRecord(userId);
 
-        if (existingRecord != null && existingRecord.getFemalePartner() != null && existingRecord.getFemalePartner().getPersonalInfo() != null) {
-            // preserve name/email from existing record
-            record.getFemalePartner()
-                    .setPersonalInfo(
-                            PersonalInfo.builder()
-                                    .firstName(existingRecord.getFemalePartner().getPersonalInfo().getFirstName())
-                                    .lastName(existingRecord.getFemalePartner().getPersonalInfo().getLastName())
-                                    .email(existingRecord.getFemalePartner().getPersonalInfo().getEmail())
-                                    .build()
-                    );
+        if (existingRecord != null && existingRecord.getFemalePartner() != null) {
+            Partner incomingPartner = record.getFemalePartner() != null ? record.getFemalePartner() : Partner.builder().build();
+            PersonalInfo mergedInfo = mergePersonalInfo(
+                    existingRecord.getFemalePartner().getPersonalInfo(),
+                    incomingPartner.getPersonalInfo());
+            incomingPartner.setPersonalInfo(mergedInfo);
+            record.setFemalePartner(incomingPartner);
         }
         FertilityRecord saved = fertilityRecordService.addFertilityRecord(record);
         authService.markSubmitted(userId);
@@ -171,6 +169,21 @@ public class PatientController {
     @GetMapping("/me/{id}")
     public FertilityRecord getPatientRecord(@PathVariable String id){
         return fertilityRecordService.getFertilityRecord(id);
+    }
+
+    private PersonalInfo mergePersonalInfo(PersonalInfo existing, PersonalInfo incoming) {
+        if (existing == null) return incoming;
+        if (incoming == null) return existing;
+        return PersonalInfo.builder()
+                .firstName(existing.getFirstName())
+                .lastName(existing.getLastName())
+                .email(existing.getEmail())
+                .birthDate(incoming.getBirthDate() != null ? incoming.getBirthDate() : existing.getBirthDate())
+                .occupation(incoming.getOccupation() != null ? incoming.getOccupation() : existing.getOccupation())
+                .address(incoming.getAddress() != null ? incoming.getAddress() : existing.getAddress())
+                .phone(incoming.getPhone() != null ? incoming.getPhone() : existing.getPhone())
+                .maritalStatus(incoming.getMaritalStatus() != null ? incoming.getMaritalStatus() : existing.getMaritalStatus())
+                .build();
     }
 }
 
