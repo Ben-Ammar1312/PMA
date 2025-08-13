@@ -31,25 +31,25 @@ public class Spermogram {
 
     /** Date of the test. Indexed for range queries. */
     @Indexed
-    private String date;
+    private java.time.Instant date;
 
-    private String ejaculateVolume;
-    private String concentration;
-    private String progressiveMotility;
-    private String nonProgressiveMotility;
-    private String normalMorphology;
-    private String vitality;
-    private String abstinenceDays;
-    private String immotile;
-    private String leucocytes;
-    private String ph;
-    private String totalCount;
-    private String roundCells;
-    private String viscosity;
+    private Measurement ejaculateVolume;
+    private Measurement concentration;
+    private Measurement progressiveMotility;
+    private Measurement nonProgressiveMotility;
+    private Measurement normalMorphology;
+    private Measurement vitality;
+    private Measurement abstinenceDays;
+    private Measurement immotile;
+    private Measurement leucocytes;
+    private Measurement ph;
+    private Measurement totalCount;
+    private Measurement roundCells;
+    private Measurement viscosity;
     private String remarks;
     private String fileCytogramId;
-    private String multipleAnomalyIndex;
-    private java.util.Map<String, String> casa;
-    private java.util.Map<String, String> morphologyBreakdown;
+    private Measurement multipleAnomalyIndex;
+    private java.util.Map<String, Measurement> casa;
+    private java.util.Map<String, Measurement> morphologyBreakdown;
     private SpermCulture spermCulture;
 }

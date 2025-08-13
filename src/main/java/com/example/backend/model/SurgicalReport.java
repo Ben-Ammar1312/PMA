@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.Instant;
 
 @Document("surgical_reports")
 @Data
@@ -22,10 +23,10 @@ public class SurgicalReport {
     private String recordId;
 
     @Indexed
-    private String date;
+    private Instant date;
 
-    private String procedure;
-    private String indication;
-    private String findings;
-    private String postOpPlan;
+    private Measurement procedure;
+    private Measurement indication;
+    private Measurement findings;
+    private Measurement postOpPlan;
 }

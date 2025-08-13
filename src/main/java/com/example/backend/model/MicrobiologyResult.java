@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
+import java.time.Instant;
 import java.util.Map;
 
 /**
@@ -31,12 +32,12 @@ public class MicrobiologyResult {
 
     /** Date of the test. Indexed for quick range queries. */
     @Indexed
-    private String date;
+    private Instant date;
 
     private String sampleSite;
     private String testType;
     private String result;
     private String organism;
 
-    private Map<String, String> details;
+    private Map<String, Measurement> details;
 }
