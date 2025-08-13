@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TimeSeries;
 
+import java.time.Instant;
+import java.util.Map;
 
 @Document("hemostasis_panels")
 @TimeSeries(timeField = "date", metaField = "recordId")
@@ -24,11 +26,7 @@ public class HemostasisPanel {
     private String recordId;
 
     @Indexed
-    private String date;
+    private Instant date;
 
-    private String antithrombinIII;
-    private String apcResistanceRatio;
-    private String dahlbackFactor;
-    private String proteinC;
-    private String proteinS;
+    private Map<String, Measurement> parameters;
 }
