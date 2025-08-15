@@ -19,6 +19,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -145,25 +146,42 @@ public class PatientController {
 
     @Operation(summary = "Upload complementary files for the authenticated user")
     @PostMapping(
-            value    = "/complementary-files",
+            value = "/complementary-files",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> uploadComplementaryFiles(
             @AuthenticationPrincipal Jwt jwt,
             @RequestPart("files") MultipartFile[] files
-    ){
+    ) {
         String patientId = jwt.getSubject();
-        if (files == null || files.length == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 
-        int start = fileStorageService.nextIndex(patientId, "complementaryFiles");
-        for (MultipartFile f : files) {
-            if (f != null && !f.isEmpty()) {
-                fileStorageService.store(f, patientId, "complementaryFiles", start++);
-            }
+        if (files == null || files.length == 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-    return ResponseEntity.status(HttpStatus.CREATED).build();
-}
+
+        try {
+            int start = fileStorageService.nextIndex(patientId, "complementaryFiles");
+
+            for (MultipartFile f : files) {
+                if (f != null && !f.isEmpty()) {
+                    fileStorageService.store(f, patientId, "complementaryFiles", start++);
+                }
+            }
+
+            Path patientPath = fileStorageService.resolvePatientDir(patientId);
+            Map<String, Object> result = aiIntegrationService.processAndIndex(patientId, patientPath.toString());
+            log.info("process-and-index response: {}", result);
+
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+
+        } catch (Exception e) {
+            log.error("Error while uploading complementary files for patient {}: {}", patientId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+    }
+
 
     @Operation(summary="get patient's partial record by id to check if record was fully submitted")
     @GetMapping("/me/{id}")
