@@ -173,6 +173,9 @@ public class PatientController {
             Map<String, Object> result = aiIntegrationService.processAndIndex(patientId, patientPath.toString());
             log.info("process-and-index response: {}", result);
 
+            SummaryResponse summaryResponse = aiIntegrationService.generateSummary(patientId);
+            log.info("Summary generation response: {}", summaryResponse);
+
             return ResponseEntity.status(HttpStatus.CREATED).build();
 
         } catch (Exception e) {
