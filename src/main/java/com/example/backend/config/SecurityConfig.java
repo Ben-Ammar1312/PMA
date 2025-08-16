@@ -101,12 +101,13 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/forgot-password").permitAll()
 
-                        .requestMatchers("/ai/**").hasRole("Doctor")
+                        .requestMatchers("/ai/**").hasAnyRole("Doctor","Secretary")
+
                         .requestMatchers("/test/**").permitAll()
 
 
                         // 3) doctor endpoints
-                        .requestMatchers("/doctor/**").hasRole("Doctor")
+                        .requestMatchers("/doctor/**").hasAnyRole("Doctor","Secretary")
 
                         // 4) everything else needs authentication
                         .anyRequest().authenticated()
