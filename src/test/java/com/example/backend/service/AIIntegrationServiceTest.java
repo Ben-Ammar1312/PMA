@@ -166,4 +166,13 @@ class AIIntegrationServiceTest {
         };
         assertThrows(ResourceNotFoundException.class, () -> s.findPatientFilePath("test"));
     }
+
+    @Test
+    void deletePatientData_callsDeleteEndpoint() {
+        AIIntegrationService s = new AIIntegrationService(repo);
+        ReflectionTestUtils.setField(s, "restTemplate", restTemplate);
+        ReflectionTestUtils.setField(s, "FAST_API_URL_DELETE", "http://fake/delete/");
+        s.deletePatientData("123");
+        verify(restTemplate).delete("http://fake/delete/123");
+    }
 }
