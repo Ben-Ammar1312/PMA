@@ -10,5 +10,5 @@ public interface RadiologyReportRepository extends MongoRepository<RadiologyRepo
    // List<RadiologyReport> findByRecordId(String recordId);
     List<RadiologyReport> findByRecordIdOrderByDateDesc(String recordId);;
 
-    void deleteByRecordId(String recordId);
+    void deleteAllByRecordId(String recordId);
 }
