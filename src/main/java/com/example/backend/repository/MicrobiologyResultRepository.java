@@ -12,6 +12,6 @@ public interface MicrobiologyResultRepository extends MongoRepository<Microbiolo
 
     List<MicrobiologyResult> findByRecordIdOrderByDateDesc(String recordId);;
 
-    void deleteByRecordId(String recordId);
+    void deleteAllByRecordId(String recordId);
 
 }

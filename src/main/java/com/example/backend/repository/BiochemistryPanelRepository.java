@@ -7,4 +7,5 @@ import java.util.List;
 
 public interface BiochemistryPanelRepository extends MongoRepository<BiochemistryPanel, String> {
     List<BiochemistryPanel> findByRecordId(String recordId);
+    void  deleteAllByRecordId(String recordId);
 }

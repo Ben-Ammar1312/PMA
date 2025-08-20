@@ -9,5 +9,5 @@ public interface MedicalAttachmentRepository extends MongoRepository<MedicalAtta
 
     List<MedicalAttachment> findByRecordId(String recordId);
 
-    void deleteByRecordId(String recordId);
+    void deleteAllByRecordId(String recordId);
 }
