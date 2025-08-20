@@ -7,6 +7,7 @@ import com.example.backend.service.AIIntegrationService;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
 import com.example.backend.service.UserAuthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,6 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Map;
 
@@ -34,6 +34,7 @@ public class PatientController {
     private final FileStorageService fileStorageService;
     private final UserAuthService authService;
     private final AIIntegrationService aiIntegrationService;
+    private final ObjectMapper objectMapper;
 
 
     @Operation(summary = "Submit or update the authenticated user's record")
@@ -129,8 +130,14 @@ public class PatientController {
             // Adjust this to the actual folder/file-naming your FileStorageService uses
             Path patientPath = fileStorageService.resolvePatientDir(userId);
 
+            String questionnaireData = objectMapper.writeValueAsString(record);
+
             // 1️⃣ Process and index
-            Map<String, Object> result = aiIntegrationService.processAndIndex(userId, patientPath.toString());
+            Map<String, Object> result = aiIntegrationService.processAndIndex(
+                    userId,
+                    patientPath.toString(),
+                    questionnaireData
+            );
             log.info("process-and-index response: {}", result);
 
             // 2️⃣ Generate summaries and save them in DB
@@ -170,8 +177,11 @@ public class PatientController {
             }
 
             Path patientPath = fileStorageService.resolvePatientDir(patientId);
-            Map<String, Object> result = aiIntegrationService.processAndIndex(patientId, patientPath.toString());
-            log.info("process-and-index response: {}", result);
+            Map<String, Object> result = aiIntegrationService.processAndIndexComplementary(
+                    patientId,
+                    patientPath.toString()
+            );
+            log.info("process-and-index-complementary response: {}", result);
 
             SummaryResponse summaryResponse = aiIntegrationService.generateSummary(patientId);
             log.info("Summary generation response: {}", summaryResponse);
