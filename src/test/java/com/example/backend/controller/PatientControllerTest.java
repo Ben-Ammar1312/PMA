@@ -29,10 +29,12 @@ import java.util.Comparator;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(PatientController.class)
@@ -142,6 +144,17 @@ class PatientControllerTest {
         createdFiles.add(p2);
         assertTrue(Files.exists(p2), "second autreDocument should exist");
         assertArrayEquals("world".getBytes(), Files.readAllBytes(p2));
+    }
+
+    @Test
+    void deleteRecord_callsServices() throws Exception {
+        mockMvc.perform(delete("/patient/record/{id}", "dummyUser")
+                        .with(jwt()))
+                .andExpect(status().isNoContent());
+
+        verify(fileStorageService).deletePatientFiles("dummyUser");
+        verify(fertilityRecordService).deleteFertilityRecord("dummyUser");
+        verify(aiIntegrationService).deletePatientData("dummyUser");
     }
 
 

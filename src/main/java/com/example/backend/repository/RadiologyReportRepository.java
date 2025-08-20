@@ -9,4 +9,6 @@ import java.util.List;
 public interface RadiologyReportRepository extends MongoRepository<RadiologyReport, String> {
    // List<RadiologyReport> findByRecordId(String recordId);
     List<RadiologyReport> findByRecordIdOrderByDateDesc(String recordId);;
+
+    void deleteAllByRecordId(String recordId);
 }

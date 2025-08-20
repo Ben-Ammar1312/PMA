@@ -10,4 +10,6 @@ public interface HysterosalpingographyRepository extends MongoRepository<Hystero
 
     //List<Hysterosalpingography> findByRecordId(String recordId);
     List<Hysterosalpingography> findByRecordIdOrderByDateDesc(String recordId);;
+
+    void deleteAllByRecordId(String recordId);
 }

@@ -27,6 +27,9 @@ class FertilityRecordServiceTest {
     @Mock MedicalAttachmentRepository       medicalAttachmentRepository;
     @Mock RadiologyReportRepository radiologyReportRepository;
     @Mock SurgicalReportRepository surgicalReportRepository;
+    @Mock HematologyPanelRepository hematologyPanelRepository;
+    @Mock HemostasisPanelRepository hemostasisPanelRepository;
+    @Mock BiochemistryPanelRepository biochemistryPanelRepository;
 
     @InjectMocks FertilityRecordService service;
 
@@ -172,5 +175,22 @@ class FertilityRecordServiceTest {
 
         assertThrows(IllegalArgumentException.class, () -> service.createRecordForUser(invalidData1));
         assertThrows(IllegalArgumentException.class, () -> service.createRecordForUser(invalidData2));
+    }
+
+    @Test
+    void deleteFertilityRecord_removesAllAssociatedData() {
+        service.deleteFertilityRecord("rid");
+        verify(microbiologyResultRepository).deleteAllByRecordId("rid");
+        verify(hormonePanelRepository).deleteAllByRecordId("rid");
+        verify(hysterosalpingographyRepository).deleteAllByRecordId("rid");
+        verify(pelvicUltrasoundRepository).deleteAllByRecordId("rid");
+        verify(spermogramRepository).deleteAllByRecordId("rid");
+        verify(medicalAttachmentRepository).deleteAllByRecordId("rid");
+        verify(radiologyReportRepository).deleteAllByRecordId("rid");
+        verify(surgicalReportRepository).deleteAllByRecordId("rid");
+        verify(hematologyPanelRepository).deleteAllByRecordId("rid");
+        verify(hemostasisPanelRepository).deleteAllByRecordId("rid");
+        verify(biochemistryPanelRepository).deleteAllByRecordId("rid");
+        verify(fertilityRecordRepository).deleteById("rid");
     }
 }

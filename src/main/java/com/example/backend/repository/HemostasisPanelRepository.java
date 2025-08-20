@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface HemostasisPanelRepository extends MongoRepository<HemostasisPanel, String> {
     List<HemostasisPanel> findByRecordId(String recordId);
+
+    void deleteAllByRecordId(String recordId);
 }

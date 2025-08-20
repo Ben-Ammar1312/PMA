@@ -7,6 +7,7 @@ import com.example.backend.service.AIIntegrationService;
 import com.example.backend.service.FertilityRecordService;
 import com.example.backend.service.FileStorageService;
 import com.example.backend.service.UserAuthService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class PatientController {
     private final FileStorageService fileStorageService;
     private final UserAuthService authService;
     private final AIIntegrationService aiIntegrationService;
+    private final ObjectMapper objectMapper;
 
 
     @Operation(summary = "Submit or update the authenticated user's record")
@@ -128,8 +130,14 @@ public class PatientController {
             // Adjust this to the actual folder/file-naming your FileStorageService uses
             Path patientPath = fileStorageService.resolvePatientDir(userId);
 
+            String questionnaireData = objectMapper.writeValueAsString(record);
+
             // 1️⃣ Process and index
-            Map<String, Object> result = aiIntegrationService.processAndIndex(userId, patientPath.toString());
+            Map<String, Object> result = aiIntegrationService.processAndIndex(
+                    userId,
+                    patientPath.toString(),
+                    questionnaireData
+            );
             log.info("process-and-index response: {}", result);
 
             // 2️⃣ Generate summaries and save them in DB
@@ -145,30 +153,61 @@ public class PatientController {
 
     @Operation(summary = "Upload complementary files for the authenticated user")
     @PostMapping(
-            value    = "/complementary-files",
+            value = "/complementary-files",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Void> uploadComplementaryFiles(
             @AuthenticationPrincipal Jwt jwt,
             @RequestPart("files") MultipartFile[] files
-    ){
+    ) {
         String patientId = jwt.getSubject();
-        if (files == null || files.length == 0) return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 
-        int start = fileStorageService.nextIndex(patientId, "complementaryFiles");
-        for (MultipartFile f : files) {
-            if (f != null && !f.isEmpty()) {
-                fileStorageService.store(f, patientId, "complementaryFiles", start++);
-            }
+        if (files == null || files.length == 0) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
-    return ResponseEntity.status(HttpStatus.CREATED).build();
-}
+
+        try {
+            int start = fileStorageService.nextIndex(patientId, "complementaryFiles");
+
+            for (MultipartFile f : files) {
+                if (f != null && !f.isEmpty()) {
+                    fileStorageService.store(f, patientId, "complementaryFiles", start++);
+                }
+            }
+
+            Path patientPath = fileStorageService.resolvePatientDir(patientId);
+            Map<String, Object> result = aiIntegrationService.processAndIndexComplementary(
+                    patientId,
+                    patientPath.toString()
+            );
+            log.info("process-and-index-complementary response: {}", result);
+
+            SummaryResponse summaryResponse = aiIntegrationService.generateSummary(patientId);
+            log.info("Summary generation response: {}", summaryResponse);
+
+            return ResponseEntity.status(HttpStatus.CREATED).build();
+
+        } catch (Exception e) {
+            log.error("Error while uploading complementary files for patient {}: {}", patientId, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+    }
+
 
     @Operation(summary="get patient's partial record by id to check if record was fully submitted")
     @GetMapping("/me/{id}")
     public FertilityRecord getPatientRecord(@PathVariable String id){
         return fertilityRecordService.getFertilityRecord(id);
+    }
+
+    @DeleteMapping("/record/{id}")
+    public ResponseEntity<Void> deletePatientRecord(@PathVariable String id) {
+        fileStorageService.deletePatientFiles(id);
+        fertilityRecordService.deleteFertilityRecord(id);
+        aiIntegrationService.deletePatientData(id);
+        return ResponseEntity.noContent().build();
     }
 
     private PersonalInfo mergePersonalInfo(PersonalInfo existing, PersonalInfo incoming) {
