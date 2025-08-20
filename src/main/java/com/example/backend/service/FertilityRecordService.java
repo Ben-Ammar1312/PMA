@@ -31,6 +31,10 @@ public class FertilityRecordService {
     final MedicalAttachmentRepository medicalAttachmentRepository;
     final RadiologyReportRepository radiologyReportRepository;
     final SurgicalReportRepository surgicalReportRepository;
+    final HemostasisPanelRepository hemostasisPanelRepository;
+    final HematologyPanelRepository hematologyPanelRepository;
+    final BiochemistryPanelRepository biochemistryPanelRepository;
+
     private static final Logger log = LoggerFactory.getLogger(FertilityRecordService.class);
 
 
@@ -108,14 +112,17 @@ public class FertilityRecordService {
     }
 
     public void deleteFertilityRecord(String recordId) {
-        microbiologyResultRepository.deleteByRecordId(recordId);
-        hormonePanelRepository.deleteByRecordId(recordId);
-        hysterosalpingographyRepository.deleteByRecordId(recordId);
-        pelvicUltrasoundRepository.deleteByRecordId(recordId);
-        spermogramRepository.deleteByRecordId(recordId);
-        medicalAttachmentRepository.deleteByRecordId(recordId);
-        radiologyReportRepository.deleteByRecordId(recordId);
-        surgicalReportRepository.deleteByRecordId(recordId);
+        microbiologyResultRepository.deleteAllByRecordId(recordId);
+        hormonePanelRepository.deleteAllByRecordId(recordId);
+        hysterosalpingographyRepository.deleteAllByRecordId(recordId);
+        pelvicUltrasoundRepository.deleteAllByRecordId(recordId);
+        spermogramRepository.deleteAllByRecordId(recordId);
+        medicalAttachmentRepository.deleteAllByRecordId(recordId);
+        radiologyReportRepository.deleteAllByRecordId(recordId);
+        surgicalReportRepository.deleteAllByRecordId(recordId);
+        hemostasisPanelRepository.deleteAllByRecordId(recordId);
+        hematologyPanelRepository.deleteAllByRecordId(recordId);
+        biochemistryPanelRepository.deleteAllByRecordId(recordId);
         fertilityRecordRepository.deleteById(recordId);
     }
 

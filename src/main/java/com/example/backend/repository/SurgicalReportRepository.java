@@ -10,5 +10,5 @@ public interface SurgicalReportRepository extends MongoRepository<SurgicalReport
    // List<SurgicalReport> findByRecordId(String recordId);
     List<SurgicalReport> findByRecordIdOrderByDateDesc(String recordId);;
 
-    void deleteByRecordId(String recordId);
+    void deleteAllByRecordId(String recordId);
 }
