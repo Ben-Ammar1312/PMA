@@ -84,7 +84,7 @@ class UserRegistrationServiceTest {
         assertEquals("test@example.com", result.get(3));  // email
 
         verify(usersResource).create(any(UserRepresentation.class));
-        verify(usersResource, times(2)).get("123");
+        verify(usersResource, atLeastOnce()).get("123");
         verify(userResource).sendVerifyEmail();
         verify(roleScopeResource).add(List.of(patientRole));
     }

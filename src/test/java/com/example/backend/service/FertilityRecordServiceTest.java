@@ -173,4 +173,18 @@ class FertilityRecordServiceTest {
         assertThrows(IllegalArgumentException.class, () -> service.createRecordForUser(invalidData1));
         assertThrows(IllegalArgumentException.class, () -> service.createRecordForUser(invalidData2));
     }
+
+    @Test
+    void deleteFertilityRecord_removesAllAssociatedData() {
+        service.deleteFertilityRecord("rid");
+        verify(microbiologyResultRepository).deleteByRecordId("rid");
+        verify(hormonePanelRepository).deleteByRecordId("rid");
+        verify(hysterosalpingographyRepository).deleteByRecordId("rid");
+        verify(pelvicUltrasoundRepository).deleteByRecordId("rid");
+        verify(spermogramRepository).deleteByRecordId("rid");
+        verify(medicalAttachmentRepository).deleteByRecordId("rid");
+        verify(radiologyReportRepository).deleteByRecordId("rid");
+        verify(surgicalReportRepository).deleteByRecordId("rid");
+        verify(fertilityRecordRepository).deleteById("rid");
+    }
 }

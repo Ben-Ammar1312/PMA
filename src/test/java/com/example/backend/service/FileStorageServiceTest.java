@@ -44,4 +44,20 @@ class FileStorageServiceTest {
         assertThrows(FileStorageException.class,
                 () -> svc.store(file, "p1", "evil", null));
     }
+
+    @Test
+    void deletePatientFiles_removesDirectory() throws Exception {
+        FileStorageService svc = new FileStorageService(tempDir.toString());
+        svc.init();
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "test.txt", "text/plain", "data".getBytes()
+        );
+
+        Path stored = svc.store(file, "p1", "test", null);
+        assertTrue(Files.exists(stored));
+
+        svc.deletePatientFiles("p1");
+        assertFalse(Files.exists(stored.getParent()));
+    }
 }
