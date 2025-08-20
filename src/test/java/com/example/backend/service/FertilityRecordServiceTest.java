@@ -27,6 +27,9 @@ class FertilityRecordServiceTest {
     @Mock MedicalAttachmentRepository       medicalAttachmentRepository;
     @Mock RadiologyReportRepository radiologyReportRepository;
     @Mock SurgicalReportRepository surgicalReportRepository;
+    @Mock HematologyPanelRepository hematologyPanelRepository;
+    @Mock HemostasisPanelRepository hemostasisPanelRepository;
+    @Mock BiochemistryPanelRepository biochemistryPanelRepository;
 
     @InjectMocks FertilityRecordService service;
 
@@ -177,14 +180,17 @@ class FertilityRecordServiceTest {
     @Test
     void deleteFertilityRecord_removesAllAssociatedData() {
         service.deleteFertilityRecord("rid");
-        verify(microbiologyResultRepository).deleteByRecordId("rid");
-        verify(hormonePanelRepository).deleteByRecordId("rid");
-        verify(hysterosalpingographyRepository).deleteByRecordId("rid");
-        verify(pelvicUltrasoundRepository).deleteByRecordId("rid");
-        verify(spermogramRepository).deleteByRecordId("rid");
-        verify(medicalAttachmentRepository).deleteByRecordId("rid");
-        verify(radiologyReportRepository).deleteByRecordId("rid");
-        verify(surgicalReportRepository).deleteByRecordId("rid");
+        verify(microbiologyResultRepository).deleteAllByRecordId("rid");
+        verify(hormonePanelRepository).deleteAllByRecordId("rid");
+        verify(hysterosalpingographyRepository).deleteAllByRecordId("rid");
+        verify(pelvicUltrasoundRepository).deleteAllByRecordId("rid");
+        verify(spermogramRepository).deleteAllByRecordId("rid");
+        verify(medicalAttachmentRepository).deleteAllByRecordId("rid");
+        verify(radiologyReportRepository).deleteAllByRecordId("rid");
+        verify(surgicalReportRepository).deleteAllByRecordId("rid");
+        verify(hematologyPanelRepository).deleteAllByRecordId("rid");
+        verify(hemostasisPanelRepository).deleteAllByRecordId("rid");
+        verify(biochemistryPanelRepository).deleteAllByRecordId("rid");
         verify(fertilityRecordRepository).deleteById("rid");
     }
 }
