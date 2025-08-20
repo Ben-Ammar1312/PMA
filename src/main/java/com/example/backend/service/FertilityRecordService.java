@@ -107,6 +107,18 @@ public class FertilityRecordService {
 
     }
 
+    public void deleteFertilityRecord(String recordId) {
+        microbiologyResultRepository.deleteByRecordId(recordId);
+        hormonePanelRepository.deleteByRecordId(recordId);
+        hysterosalpingographyRepository.deleteByRecordId(recordId);
+        pelvicUltrasoundRepository.deleteByRecordId(recordId);
+        spermogramRepository.deleteByRecordId(recordId);
+        medicalAttachmentRepository.deleteByRecordId(recordId);
+        radiologyReportRepository.deleteByRecordId(recordId);
+        surgicalReportRepository.deleteByRecordId(recordId);
+        fertilityRecordRepository.deleteById(recordId);
+    }
+
 
     /** return all fertility records */
     public java.util.List<FertilityRecord> getAllRecords() {

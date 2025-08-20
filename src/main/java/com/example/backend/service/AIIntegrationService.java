@@ -27,6 +27,10 @@ public class AIIntegrationService {
     private  String FAST_API_URL_SUMMARIZE;
     @Value("${FAST_API_URL_PROCESS}")
     private  String FAST_API_URL_PROCESS;
+    @Value("${FAST_API_URL_PROCESS_COMPLEMENTARY}")
+    private String FAST_API_URL_PROCESS_COMPLEMENTARY;
+    @Value("${FAST_API_URL_DELETE}")
+    private String FAST_API_URL_DELETE;
     private final FertilityRecordRepository fertilityRecordRepository;
     private static final Logger log = LoggerFactory.getLogger(AIIntegrationService.class);
 
@@ -105,15 +109,17 @@ public class AIIntegrationService {
 
 
 
-    public Map<String, Object> processAndIndex(String recordId, String patientPath) {
-        String url = FAST_API_URL_PROCESS ;
+    public Map<String, Object> processAndIndex(String recordId,
+                                               String patientPath,
+                                               String questionnaireData) {
+        String url = FAST_API_URL_PROCESS;
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Build the JSON payload exactly as in your spec
         Map<String, String> payload = Map.of(
-                "record_id",  recordId,
-                "patient_path", patientPath
+                "record_id", recordId,
+                "patient_path", patientPath,
+                "questionnaire_data", questionnaireData
         );
 
         HttpEntity<Map<String, String>> req = new HttpEntity<>(payload, headers);
@@ -125,6 +131,38 @@ public class AIIntegrationService {
         }
         //noinspection unchecked
         return (Map<String, Object>) resp.getBody();
+    }
+
+    public Map<String, Object> processAndIndexComplementary(String recordId,
+                                                            String patientPath) {
+        String url = FAST_API_URL_PROCESS_COMPLEMENTARY;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        Map<String, String> payload = Map.of(
+                "record_id", recordId,
+                "patient_path", patientPath
+        );
+
+        HttpEntity<Map<String, String>> req = new HttpEntity<>(payload, headers);
+        ResponseEntity<Map> resp = restTemplate.postForEntity(url, req, Map.class);
+
+        if (!resp.getStatusCode().is2xxSuccessful() || resp.getBody() == null) {
+            throw new AIServiceException(
+                    "Failed to process-and-index-complementary (status=" + resp.getStatusCode() + ")");
+        }
+        //noinspection unchecked
+        return (Map<String, Object>) resp.getBody();
+    }
+
+    public void deletePatientData(String recordId) {
+        String url = FAST_API_URL_DELETE + recordId;
+        try {
+            restTemplate.delete(url);
+        } catch (RestClientException e) {
+            log.error("error during call to fastAPI {}", e.getMessage(), e);
+            throw new AIServiceException("Error calling delete service", e);
+        }
     }
 
 
