@@ -10,4 +10,6 @@ public interface SpermogramRepository extends MongoRepository<Spermogram, String
 
     //List<Spermogram> findByRecordId(String recordId);
     List<Spermogram> findByRecordIdOrderByDateDesc(String recordId);;
+
+    void deleteByRecordId(String recordId);
 }

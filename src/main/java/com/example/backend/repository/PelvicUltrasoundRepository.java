@@ -10,4 +10,6 @@ public interface PelvicUltrasoundRepository extends MongoRepository<PelvicUltras
 
     //List<PelvicUltrasound> findByRecordId(String recordId);
     List<PelvicUltrasound> findByRecordIdOrderByDateDesc(String recordId);;
+
+    void deleteByRecordId(String recordId);
 }

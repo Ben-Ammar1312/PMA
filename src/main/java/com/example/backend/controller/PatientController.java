@@ -202,6 +202,14 @@ public class PatientController {
         return fertilityRecordService.getFertilityRecord(id);
     }
 
+    @DeleteMapping("/record/{id}")
+    public ResponseEntity<Void> deletePatientRecord(@PathVariable String id) {
+        fileStorageService.deletePatientFiles(id);
+        fertilityRecordService.deleteFertilityRecord(id);
+        aiIntegrationService.deletePatientData(id);
+        return ResponseEntity.noContent().build();
+    }
+
     private PersonalInfo mergePersonalInfo(PersonalInfo existing, PersonalInfo incoming) {
         if (existing == null) return incoming;
         if (incoming == null) return existing;

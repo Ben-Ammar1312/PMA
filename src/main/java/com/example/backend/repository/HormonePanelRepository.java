@@ -13,4 +13,6 @@ public interface HormonePanelRepository extends MongoRepository<HormonePanel, St
     List<HormonePanel> findByRecordId(String recordId, Sort sort);
     List<HormonePanel> findByRecordIdOrderByDateDesc(String recordId);
 
+    void deleteByRecordId(String recordId);
+
 }

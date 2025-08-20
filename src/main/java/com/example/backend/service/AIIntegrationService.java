@@ -29,6 +29,10 @@ public class AIIntegrationService {
     private  String FAST_API_URL_PROCESS;
     @Value("${FAST_API_URL_PROCESS_COMPLEMENTARY}")
     private String FAST_API_URL_PROCESS_COMPLEMENTARY;
+
+    @Value("${FAST_API_URL_DELETE}")
+    private String FAST_API_URL_DELETE;
+
     private final FertilityRecordRepository fertilityRecordRepository;
     private static final Logger log = LoggerFactory.getLogger(AIIntegrationService.class);
 
@@ -153,6 +157,15 @@ public class AIIntegrationService {
         return (Map<String, Object>) resp.getBody();
     }
 
+    public void deletePatientData(String recordId) {
+        String url = FAST_API_URL_DELETE + recordId;
+        try {
+            restTemplate.delete(url);
+        } catch (RestClientException e) {
+            log.error("error during call to fastAPI {}", e.getMessage(), e);
+            throw new AIServiceException("Error calling delete service", e);
+        }
+    }
 
 
 

@@ -141,6 +141,29 @@ public class FileStorageService {
         }
     }
 
+    public void deletePatientFiles(String patientId) {
+        try (Stream<Path> dirs = Files.list(uploadRoot)) {
+            dirs.filter(Files::isDirectory)
+                    .filter(d -> d.getFileName().toString().startsWith(patientId + "_"))
+                    .forEach(dir -> {
+                        try (Stream<Path> walk = Files.walk(dir)) {
+                            walk.sorted(Comparator.reverseOrder())
+                                    .forEach(p -> {
+                                        try {
+                                            Files.deleteIfExists(p);
+                                        } catch (IOException e) {
+                                            throw new FileStorageException("Could not delete file " + p, e);
+                                        }
+                                    });
+                        } catch (IOException e) {
+                            throw new FileStorageException("Could not delete directory " + dir, e);
+                        }
+                    });
+        } catch (IOException e) {
+            throw new FileStorageException("Could not list directories under " + uploadRoot, e);
+        }
+    }
+
 
 
 }
