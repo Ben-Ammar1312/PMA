@@ -29,8 +29,10 @@ public class AIIntegrationService {
     private  String FAST_API_URL_PROCESS;
     @Value("${FAST_API_URL_PROCESS_COMPLEMENTARY}")
     private String FAST_API_URL_PROCESS_COMPLEMENTARY;
+
     @Value("${FAST_API_URL_DELETE}")
     private String FAST_API_URL_DELETE;
+
     private final FertilityRecordRepository fertilityRecordRepository;
     private static final Logger log = LoggerFactory.getLogger(AIIntegrationService.class);
 
@@ -164,7 +166,6 @@ public class AIIntegrationService {
             throw new AIServiceException("Error calling delete service", e);
         }
     }
-
 
 
 
