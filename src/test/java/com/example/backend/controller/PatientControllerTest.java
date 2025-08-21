@@ -135,12 +135,12 @@ class PatientControllerTest {
         String today = java.time.LocalDate.now().toString();
         Path uploadDir = Paths.get("uploads/dummyUser_" + today);
 
-        Path p1 = uploadDir.resolve("autreDocument_1_" + today + ".txt");
+        Path p1 = uploadDir.resolve("autreDocument1_" + today + ".txt");
         createdFiles.add(p1);
         assertTrue(Files.exists(p1), "first autreDocument should exist");
         assertArrayEquals("hello".getBytes(), Files.readAllBytes(p1));
 
-        Path p2 = uploadDir.resolve("autreDocument_2_" + today + ".txt");
+        Path p2 = uploadDir.resolve("autreDocument2_" + today + ".txt");
         createdFiles.add(p2);
         assertTrue(Files.exists(p2), "second autreDocument should exist");
         assertArrayEquals("world".getBytes(), Files.readAllBytes(p2));

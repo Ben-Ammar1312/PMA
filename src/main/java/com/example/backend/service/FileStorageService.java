@@ -61,7 +61,7 @@ public class FileStorageService {
             ext = originalFilename.substring(dot);
         }
         StringBuilder name = new StringBuilder(logicalName);
-        if (counter != null) name.append('_').append(counter);
+        if (counter != null) name.append(counter);
         name.append('_').append(LocalDate.now())
                 .append(ext);
 
@@ -85,7 +85,7 @@ public class FileStorageService {
      * logicalName{N} and return next index = max+1
      */
     public int nextIndex(String patientId, String logicalName) {
-        Pattern p = Pattern.compile(Pattern.quote(logicalName) + "_(\\d+)_.*",
+        Pattern p = Pattern.compile(Pattern.quote(logicalName) + "(\\d+)_.*",
                 Pattern.CASE_INSENSITIVE);
 
         try (Stream<Path> dirs = Files.list(uploadRoot)) {
