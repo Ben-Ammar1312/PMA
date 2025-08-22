@@ -125,4 +125,68 @@ public class UserRegistrationService {
         }
     }
 
+    public List<String> registerBySecretary(String firstName, String lastName, String email) {
+        UserRepresentation user = new UserRepresentation();
+        user.setUsername(email);
+        user.setEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmailVerified(false);
+        user.setRequiredActions(List.of("VERIFY_EMAIL", "UPDATE_PASSWORD"));
+        user.setEnabled(true);
+        Map<String, List<String>> attrs = new HashMap<>();
+        attrs.put("submitted", Collections.singletonList("false"));
+        user.setAttributes(attrs);
+
+        CredentialRepresentation cred = new CredentialRepresentation();
+        cred.setType(CredentialRepresentation.PASSWORD);
+        cred.setValue("azerty");
+        cred.setTemporary(true);
+        user.setCredentials(List.of(cred));
+
+        try {
+            Response resp = keycloak.realm(targetRealm)
+                    .users()
+                    .create(user);
+
+            if (resp.getStatus() >= 400) {
+                throw new UserRegistrationException(
+                        "Failed to create user in realm '" + targetRealm + "': HTTP " + resp.getStatus());
+            }
+            if (resp.getLocation() == null) {
+                throw new UserRegistrationException(
+                        "Registration succeeded but response did not contain a Location header");
+            }
+
+            String userId = resp.getLocation().getPath()
+                    .substring(resp.getLocation().getPath().lastIndexOf('/') + 1);
+
+            RoleRepresentation patientRole = keycloak.realm(targetRealm)
+                    .roles()
+                    .get("Patient")
+                    .toRepresentation();
+
+            keycloak.realm(targetRealm)
+                    .users()
+                    .get(userId)
+                    .roles()
+                    .realmLevel()
+                    .add(List.of(patientRole));
+
+            keycloak.realm(targetRealm)
+                    .users()
+                    .get(userId)
+                    .executeActionsEmail(List.of("VERIFY_EMAIL", "UPDATE_PASSWORD"));
+
+            return List.of(userId, firstName, lastName, email);
+
+        } catch (UserRegistrationException e) {
+            log.error("Keycloak connection test failed", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Registration failed", e);
+            throw new UserRegistrationException("Unexpected error during user registration " + e.getMessage(), e);
+        }
+    }
+
 }

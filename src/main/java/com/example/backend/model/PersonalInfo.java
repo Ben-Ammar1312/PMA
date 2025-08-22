@@ -11,4 +11,5 @@ public class PersonalInfo {
     private String email;
     private String phone;
     private String maritalStatus;
+    private String age;
 }
